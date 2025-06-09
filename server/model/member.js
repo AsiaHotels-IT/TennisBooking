@@ -5,15 +5,13 @@ const Schema = mongoose.Schema
 const memberSchema = mongoose.Schema({
     cusName: {
         type: String,
-        maxlength: 20
-    },
-    cusSurname: {
-        type: String,
-        maxlength: 20
+        maxlength: 20,
+        required: true,
     },
     cusTel: {
         type: String,
-        maxlength: 10
+        maxlength: 10,
+        required: true,
     },
     memberPoint: {
         type: Number,
@@ -21,12 +19,14 @@ const memberSchema = mongoose.Schema({
     },
     memberStart: {
         type: Date,
-        default: Date.now
+        default: Date()
     },
-    reservationBefore: {
-        type: mongoose.Schema.Types.Number,
-        ref: 'ResurvationStadium'
-    }
+    reservationBefore: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Reservation"
+        },
+    ]
 });
 
 memberSchema.plugin(AutoIncrement, {inc_field: "memberID"});

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TimePicker from 'react-time-picker';
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
+import { useNavigate } from 'react-router-dom';
 
 const Reservation = ({ selectedDate }) => {
   const [startTime, setStartTime] = useState('00:00');
@@ -10,6 +11,7 @@ const Reservation = ({ selectedDate }) => {
   const [price, setPrice] = useState(0);
   const [error, setError] = useState('');
   const [pickup, setPickup] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (startTime && endTime) {
@@ -46,12 +48,20 @@ const Reservation = ({ selectedDate }) => {
 
   return (
     <div>
-      <h2>รายละเอียดการจอง</h2>
-      {selectedDate ? (
-        <p>วันที่จอง: {selectedDate}</p>
-      ) : (
-        <p>ไม่ได้รับวันที่จากหน้าก่อนหน้า</p>
-      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div>
+          <h2>รายละเอียดการจอง</h2>
+          {selectedDate ? (
+            <p>วันที่จอง: {selectedDate}</p>
+          ) : (
+            <p>ไม่ได้รับวันที่จากหน้าก่อนหน้า</p>
+          )}
+        </div>
+        <div>
+          <button onClick={() => navigate("/member")}>สมัครสมาชิก</button>
+        </div>
+      </div>
+      
 
       <form>
         <label>หมายเลขสมาชิก (ถ้ามี) : 
@@ -63,38 +73,42 @@ const Reservation = ({ selectedDate }) => {
         <label>เบอร์ติดต่อ : 
           <input type="tel" />
         </label><br />
-        <label>
+        <label>บุคคลอ้างอิง (ถ้ามี) : 
+          <input type="text" />
+        </label><br />
+        <div style={{ display:'flex' , flexDirection:'row', justifyContent:'space-evenly', marginTop: '20px', marginBottom: '20px'}}>
+          <label>
           เวลาเริ่ม:
-          <TimePicker
-            onChange={setStartTime}
-            value={startTime}
-            format="HH:mm"
-            disableClock={true}
-            hourPlaceholder="hh"
-            minutePlaceholder="mm"
-            minTime="00:00"
-            maxTime="23:30"
-            clearIcon={null}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          เวลาสิ้นสุด:
-          <TimePicker
-            onChange={setEndTime}
-            value={endTime}
-            format="HH:mm"
-            disableClock={true}
-            hourPlaceholder="hh"
-            minutePlaceholder="mm"
-            minTime="00:00"
-            maxTime="23:30"
-            clearIcon={null}
-            required
-          />
-        </label>
-
+            <TimePicker
+              onChange={setStartTime}
+              value={startTime}
+              format="HH:mm"
+              disableClock={true}
+              hourPlaceholder="hh"
+              minutePlaceholder="mm"
+              minTime="00:00"
+              maxTime="23:30"
+              clearIcon={null}
+              required
+            />
+          </label>
+          <br />
+          <label>
+            เวลาสิ้นสุด:
+            <TimePicker
+              onChange={setEndTime}
+              value={endTime}
+              format="HH:mm"
+              disableClock={true}
+              hourPlaceholder="hh"
+              minutePlaceholder="mm"
+              minTime="00:00"
+              maxTime="23:30"
+              clearIcon={null}
+              required
+            />
+          </label>
+        </div>
         {error && (
           <p style={{ color: 'red', marginTop: '8px' }}>
             {error}
@@ -102,59 +116,8 @@ const Reservation = ({ selectedDate }) => {
         )}
 
         <div>
-          <label>
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="เงินสด"
-              checked={paymentMethod === 'เงินสด'}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            />
-            เงินสด
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="โอน"
-              checked={paymentMethod === 'โอน'}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            />
-            โอน
-          </label>
-        </div>
-
-        <p>ราคาที่ต้องชำระ: {price} บาท</p>
-        <div>
-           {paymentMethod === 'เงินสด' && (
-        <div>
-          <p>รับเงินจำนวน: 
-            <input 
-              type="number" 
-              value={pickup} 
-              onChange={(e) => setPickup(e.target.value)} 
-            /> บาท
-          </p>
-          <button type="submit" onClick={() => cashup(Number(pickup))}>คำนวณเงินทอน</button>
-        </div>
-      )}
-
-      {paymentMethod === 'โอน' && (
-        <div>
-          <p>กรุณาชำระเงินผ่าน QR Code PromptPay ด้านล่าง</p>
-          {/* ใส่ภาพ QR Code หรือ component QR code ของคุณที่นี่ */}
-          <img 
-            src="https://tse1.mm.bing.net/th/id/OIP.J7jd7PlYtKEfGRXW8jgX5gHaHn?r=0&rs=1&pid=ImgDetMain" 
-            alt="QR Code PromptPay" 
-            style={{width: '200px', height: '200px'}} 
-          />
-          <p>จำนวนเงินที่ต้องโอน: {price} บาท</p>
-          <button type='submit'>เสร็จสิ้น</button>
-        </div>
-      )}
+          
     </div>
-
   </form>
 </div>
 );

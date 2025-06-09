@@ -53,6 +53,15 @@ exports.create = async (req, res) => {
 
     // สร้างการจองใหม่
     const reserv = await new ReservationStadium(data).save();
+
+    if (data.memberID) {
+      const member = await Member.findOne({ memberID: data.memberID });
+      if (member) {
+        member.reservationBefore.push(reserv._id);
+        await member.save();
+      }
+    }
+
     res.send(reserv);
 
   } catch (err) {
@@ -75,31 +84,38 @@ exports.update = async (req, res) => {
 
     if (!isFullHourDuration(newData.startTime, newData.endTime)) {
       return res.status(400).json({ message: 'กรุณาจองเป็นชั่วโมงเต็ม เช่น 10:00 - 11:00, 14:00 - 16:00' });
-    }   
+    }
 
-    // หา reservation ที่วันที่เดียวกันและไม่ใช่ตัวที่กำลังจะอัพเดต
     const existingReservations = await ReservationStadium.find({ 
       reservDate: newData.reservDate, 
       reservID: { $ne: id }, 
       status: { $ne: 'ยกเลิก' } 
     });
 
-    // ตรวจสอบเวลาซ้อนกัน
     for (const reserv of existingReservations) {
       if (isTimeOverlap(newData.startTime, newData.endTime, reserv.startTime, reserv.endTime)) {
         return res.status(400).json({ message: 'เวลาจองซ้อนกับการจองอื่นแล้ว' });
       }
     }
 
-    // คำนวณจำนวนชั่วโมง และคิดราคา
     const hours = calculateHours(newData.startTime, newData.endTime);
     newData.amount = hours * 200;
 
-    // อัพเดตข้อมูล
     const updated = await ReservationStadium.findOneAndUpdate({ reservID: id }, newData, { new: true }).exec();
 
     if (!updated) {
       return res.status(404).json({ message: 'ไม่พบข้อมูลการจองที่ต้องการแก้ไข' });
+    }
+
+     if (newData.memberID) {
+      const member = await Member.findOne({ memberID: newData.memberID });
+      if (member) {
+        if (!Array.isArray(member.reservationBefore)) {
+          member.reservationBefore = [];
+        }
+        member.reservationBefore.push(updated._id);
+        await member.save();
+      }
     }
 
     res.send(updated);

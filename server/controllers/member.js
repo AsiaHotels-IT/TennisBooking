@@ -11,16 +11,18 @@ exports.read = async(req, res) => {
     }
 }
 
-exports.list = async(req, res)=>{
-    try{
-        const allMember = await Member.find({}).exec()
-        res.send(allMember)
-    }catch(err){
-        console.log(err)
-        res.status(500).send('Server Error')
-    }
-    
-}
+exports.list = async (req, res) => {
+  try {
+    const allMember = await Member.find()
+      .populate('reservationBefore') // << สำคัญมาก!
+      .exec();
+    res.send(allMember);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Server Error');
+  }
+};
+
 
 exports.create = async (req, res)=>{
     try{

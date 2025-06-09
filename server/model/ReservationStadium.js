@@ -9,7 +9,7 @@ const ReservationStadiumSchema = mongoose.Schema({
     },
     memberID: {
         type: mongoose.Schema.Types.Number,
-        ref: 'member',
+        ref: 'Member',
     },
     cusName: {
         type: String,
@@ -40,8 +40,13 @@ const ReservationStadiumSchema = mongoose.Schema({
     },
     paymentMethod: {
       type: String,
-      enum: ['เงินสด', 'โอนผ่านธนาคาร'],
-      required: true
+      enum: ['ยังไม่ชำระเงิน','เงินสด', 'โอนผ่านธนาคาร'],
+      default: 'ยังไม่ชำระเงิน'
+    },
+    refPerson:{
+        type: String,
+        maxlength: 100,
+        default: 'ไม่มี'
     },
     amount: {
         type: Number
