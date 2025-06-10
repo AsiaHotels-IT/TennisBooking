@@ -1,5 +1,6 @@
 const ReservationStadium = require('../model/ReservationStadium')
 const Member = require('../model/member')
+const CancelReservation = require('../model/cancelReservation')
 
 exports.read = async(req, res)=>{
     try{
@@ -126,17 +127,43 @@ exports.update = async (req, res) => {
   }
 };
 
+exports.remove = async (req, res) => {
+  try {
+    const id = req.params.id;
 
-exports.remove = async(req,res)=>{
-    try{
-        const id = req.params.id
-        const removed = await ReservationStadium.findOneAndDelete({ reservID : id}).exec()
-        res.send('Delete success',removed)
-    }catch(err){
-        console.log(err)
-        res.status(500).send('Cannot Delete')
+    // 1. หาเรคคอร์ดที่ต้องการลบ
+    const reservation = await ReservationStadium.findOne({ reservID: id }).exec();
+
+    if (!reservation) {
+      return res.status(404).send('Reservation not found');
     }
-}
+
+    // 2. สร้างข้อมูลใหม่ใน CancelReservation
+    const cancelData = new CancelReservation({
+      reservID: reservation.reservID,
+      memberID: reservation.memberID,
+      cusName: reservation.cusName,
+      cusTel: reservation.cusTel,
+      reservDate: reservation.reservDate,
+      startTime: reservation.startTime,
+      endTime: reservation.endTime,
+      status: reservation.status,
+      paymentMethod: reservation.paymentMethod,
+      refPerson: reservation.refPerson,
+      amount: reservation.amount
+    });
+
+    await cancelData.save();
+
+    // 3. ลบข้อมูลจาก ReservationStadium
+    await ReservationStadium.findOneAndDelete({ reservID: id }).exec();
+
+    res.send({ message: 'Reservation canceled and moved to cancel table' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Cannot cancel reservation');
+  }
+};
 
 exports.checkAvailability = async (req, res) => {
   try {
@@ -171,6 +198,11 @@ function isTimeOverlap(start1, end1, start2, end2) {
 }
 
 function isFullHourDuration(startTime, endTime) {
+  if (!startTime || !endTime || typeof startTime !== 'string' || typeof endTime !== 'string') {
+    console.error("isFullHourDuration: invalid time input", { startTime, endTime });
+    return false;
+  }
+
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);
 

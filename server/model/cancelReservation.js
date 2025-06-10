@@ -1,15 +1,14 @@
-const mongoose = require('mongoose')
-const AutoIncrement = require('mongoose-sequence')(mongoose)
-const Schema = mongoose.Schema
+const mongoose = require('mongoose');
 
-const ReservationStadiumSchema = mongoose.Schema({
+const cancelReservationSchema = new mongoose.Schema({
     reservID: {
         type: Number,
+        required: true,
         unique: true
     },
     memberID: {
         type: mongoose.Schema.Types.Number,
-        ref: 'Member',
+        ref: 'Member'
     },
     cusName: {
         type: String,
@@ -50,8 +49,10 @@ const ReservationStadiumSchema = mongoose.Schema({
     },
     amount: {
         type: Number
+    },
+    cancelDate: {
+        type: Date,
+        default: Date.now
     }
-})
-
-ReservationStadiumSchema.plugin(AutoIncrement, {inc_field: "reservID"});
-module.exports = mongoose.model("Reservation", ReservationStadiumSchema);
+});
+module.exports = mongoose.model('CancelReservation', cancelReservationSchema);
