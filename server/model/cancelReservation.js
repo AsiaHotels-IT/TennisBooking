@@ -34,8 +34,7 @@ const cancelReservationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['จองแล้ว', 'ใช้งานแล้ว'],
-        default: 'จองแล้ว'
+        default: 'ยกเลิก'
     },
     paymentMethod: {
       type: String,

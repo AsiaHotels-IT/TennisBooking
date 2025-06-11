@@ -9,7 +9,9 @@ import Reservation from '../page/Reservation';
 import logo from '../img/logo.png'; 
 import { Modal, Box, Button, RadioGroup, FormControlLabel, Radio, TextField } from '@mui/material';
 import generatePayload from 'promptpay-qr';
-import {QRCodeCanvas}  from 'qrcode.react';   
+import {QRCodeCanvas}  from 'qrcode.react';  
+import { useNavigate } from 'react-router-dom'; 
+import './Booking.css'; 
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
@@ -22,7 +24,7 @@ const mapReservationsToEvents = (reservations) => {
 
     return {
       id: resv.reservID,
-      title: `${resv.cusName} (${resv.status})`,
+      title: `${resv.cusName} (${resv.paymentMethod})`,
       start: startDateTime,
       end: endDateTime,
     };
@@ -38,17 +40,15 @@ const formats = {
 const Booking = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('day');
+  const [view, setView] = useState('week');
   const [date, setDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);  // เก็บวันที่คลิกเลือก
   const [selectedEvent, setSelectedEvent] = useState(null); // เพิ่มสำหรับ event ที่คลิก
-  const [selectedReservation, setSelectedReservation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [draggedEvent, setDraggedEvent] = useState(null);
   const [newStart, setNewStart] = useState(null);
   const [newEnd, setNewEnd] = useState(null);
-  const [confirmID, setConfirmID] = useState('');
   const [paymentType, setPaymentType] = useState('โอนผ่านธนาคาร'); // 'เงินสด' หรือ 'โอนผ่านธนาคาร'
   const [cashReceived, setCashReceived] = useState('');
   const [change, setChange] = useState(0);
@@ -57,6 +57,7 @@ const Booking = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
+  const navigate = useNavigate();
 
   // สร้าง payload promptpay qr ตามเบอร์และจำนวนเงิน
   const qrPayload = generatePayload(paymentPromptPayID, { amount: paymentAmount });
@@ -202,7 +203,7 @@ const Booking = () => {
 
             <div class="signature">
               <p>ลงชื่อ.................................................</p>
-              <p>(ผู้จอง)</p>
+              <p>(พนักงาน)</p>
             </div>
           </div>
 
@@ -270,6 +271,8 @@ const Booking = () => {
               <h2>ใบเสร็จรับเงินสนามเทนนิส</h2>
             </div>
             <table>
+               <tr><td><strong>เลขที่ใบเสร็จ:</strong></td><td>${reservation.receiptNumber || '-'}</td></tr>
+               <tr><td><strong>วันที่ออกใบเสร็จ:</strong></td><td>${reservation.receiptDate ? new Date(reservation.receiptDate).toLocaleString() : '-'}</td></tr>
               <tr><td><strong>หมายเลขการจอง:</strong></td><td>${reservation.reservID}</td></tr>
               <tr><td><strong>ชื่อผู้จอง:</strong></td><td>${reservation.cusName}</td></tr>
               <tr><td><strong>เบอร์โทร:</strong></td><td>${reservation.cusTel || '-'}</td></tr>
@@ -313,7 +316,11 @@ const Booking = () => {
   // ยืนยันการชำระเงิน
   const handleConfirmPayment = async () => {
     if (!selectedEvent) return;
-    // เตรียมข้อมูลสำหรับอัพเดต
+
+    if (selectedEvent.receiptNumber) {
+      alert('รายการนี้ได้ชำระเงินและออกใบเสร็จแล้ว ไม่สามารถชำระซ้ำได้');
+      return;
+    }
     let method = paymentType;
     let received = null;
     let changeVal = null;
@@ -325,19 +332,35 @@ const Booking = () => {
         return;
       }
     }
+
     try {
-      await updateReservations(selectedEvent.reservID, { ...selectedEvent, paymentMethod: method });
-      // เปิด modal ใบเสร็จ
+      // สุ่มเลขใบเสร็จเฉพาะถ้ามีการชำระเงินแล้ว (ไม่ใช่ 'ยังไม่ชำระเงิน')
+      let receiptNumber = null;
+      if (method !== 'ยังไม่ชำระเงิน') {
+        receiptNumber = generateReceiptNumber();
+      }
+
+      // อัพเดตข้อมูลพร้อมเลขใบเสร็จ (ถ้ามี)
+      await updateReservations(selectedEvent.reservID, {
+        ...selectedEvent,
+        paymentMethod: method,
+        receiptNumber, // เพิ่มเลขใบเสร็จเข้าไปในข้อมูล
+        receiptDate: new Date()
+      });
+
       setReceiptData({
         ...selectedEvent,
         paymentMethod: method,
         amount: paymentAmount,
         received,
-        changeVal
+        changeVal,
+        receiptNumber
       });
+
       setIsReceiptModalOpen(true);
       setPaymentModalOpen(false);
-      // รีเฟรชข้อมูล
+
+      // รีเฟรชข้อมูลหลังอัพเดต
       const res = await getReservations();
       setEvents(mapReservationsToEvents(res.data));
     } catch (err) {
@@ -345,11 +368,70 @@ const Booking = () => {
     }
   };
 
+  const generateReceiptNumber = () => {
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
+  };
+
+  const buttonStyle = {
+  padding: '6px 18px',
+  fontSize: '14px',
+  color: '#fff',
+  backgroundColor: '#388e3c',
+  border: 'none',
+  borderRadius: '20px',
+  cursor: 'pointer',
+  boxShadow: '0 2px 8px rgba(56, 142, 60, 0.4)',
+  transition: 'background-color 0.3s ease',
+  userSelect: 'none',
+};
+
   return (
-    <div style={{ height: 700, justifyContent: 'space-evenly', display: 'flex'}}>
-      <div style={{ flex: 3, marginRight: 20 }}>
-        <h1>ปฏิทินจองสนามเทนนิส (รายวัน)</h1>
+    <div style={{  justifyContent: 'space-evenly', display: 'flex', padding: 20 }} className='booking-container'>
+      
+      <div style={{ flex: 4 }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          padding: '15px 20px', 
+          backgroundColor: '#2e7d32', 
+          borderRadius: '10px', 
+          boxShadow: '0 3px 10px rgba(46, 125, 50, 0.3)',
+          color: '#fff',
+          marginBottom: '20px',
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        }}>
+          <h1 style={{ 
+            margin: 0, 
+            fontWeight: '700', 
+            fontSize: '1.8rem',
+            userSelect: 'none',
+            letterSpacing: '1px',
+          }}>
+            ปฏิทินจองสนามเทนนิส
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <button 
+              onClick={() => navigate("/member")} 
+              style={buttonStyle}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1b4d22'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#388e3c'}
+            >
+              เพิ่มสมาชิก
+            </button>
+            <button 
+              onClick={() => navigate("/saleReport")} 
+              style={buttonStyle}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1b4d22'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#388e3c'}
+            >
+              รายงานยอดขาย
+            </button>
+          </div>
+        </div>
+        
         <DragAndDropCalendar
+          className='calendar'
           localizer={localizer}
           formats={formats}
           events={events}
@@ -360,7 +442,16 @@ const Booking = () => {
           date={date}
           onNavigate={setDate}
           views={['day', 'week', 'month']}
-          style={{ height: 600, width: '100%' }}
+          style={{ 
+            //height: 600, 
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)', 
+            backgroundColor: '#fff',
+            fontFamily: "Noto Sans Thai, sans-serif",
+            width: '100%',
+            fontSize: '15px',
+            whiteSpace: 'pre-line'
+          }}
           selectable
           onSelectSlot={(slotInfo) => setSelectedDate(slotInfo.start)}
           onSelectEvent={async (event) => {
@@ -400,7 +491,7 @@ const Booking = () => {
                 cursor: 'pointer'
               }}
             >
-              ลบใบจอง
+              ยกเลิกใบจอง
             </button>
             <Button
               variant="contained"
@@ -469,7 +560,7 @@ const Booking = () => {
             boxShadow: 24,
             width: 400
           }}>
-            <h2>ยืนยันการลบใบจอง</h2>
+            <h2>ยืนยันการยกเลิกใบจอง</h2>
             <p><strong>เลขใบจอง:</strong> {selectedEvent?.reservID}</p>
             <p><strong>วันเวลา:</strong> {moment(selectedEvent?.start).format('DD/MM/YYYY HH:mm')} - {moment(selectedEvent?.end).format('HH:mm')}</p>
             <p style={{ color: 'red' }}><strong>คุณแน่ใจหรือไม่ว่าต้องการลบใบจองนี้?</strong></p>
@@ -553,8 +644,6 @@ const Booking = () => {
             </Box>
           </Box>
         </Modal>
-
-        {/* Modal ใบเสร็จ */}
         <Modal open={isReceiptModalOpen} onClose={() => setIsReceiptModalOpen(false)}>
           <Box sx={{ p: 3 , backgroundColor: 'white', borderRadius: 2, boxShadow: 24, width: 400, margin: 'auto', marginTop: '10%' }}>
             <h2>ใบเสร็จรับเงิน</h2>

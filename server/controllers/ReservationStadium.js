@@ -147,7 +147,7 @@ exports.remove = async (req, res) => {
       reservDate: reservation.reservDate,
       startTime: reservation.startTime,
       endTime: reservation.endTime,
-      status: reservation.status,
+      status: 'ยกเลิก',
       paymentMethod: reservation.paymentMethod,
       refPerson: reservation.refPerson,
       amount: reservation.amount

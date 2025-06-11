@@ -14,3 +14,6 @@ export const updateReservations = async (id, data) =>
 
 export const deleteReservations = async (id) =>
   await axios.delete(`${process.env.REACT_APP_API}/reservation/${id}`);
+
+export const listCancelReservation = async ()=>
+    await axios.get(process.env.REACT_APP_API + '/cancelReserv');

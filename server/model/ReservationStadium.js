@@ -50,6 +50,14 @@ const ReservationStadiumSchema = mongoose.Schema({
     },
     amount: {
         type: Number
+    },
+    receiptNumber: {
+        type: String,
+        default: null,  // ค่าเริ่มต้นไม่มีเลขใบเสร็จ
+    },
+    receiptDate: {
+        type: Date,
+        default: null,
     }
 })
 
