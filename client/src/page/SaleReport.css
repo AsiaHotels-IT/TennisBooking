@@ -98,6 +98,14 @@
 @media print {
   body * {
     visibility: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  @page {
+    size: landscape;
+    margin: 0;
+    padding: 0 5px 0 5px;
   }
 
   .print-area, .print-area * {
@@ -109,11 +117,10 @@
     left: 0;
     top: 0;
     width: 100%;
-    font-size: 14pt;
   }
 
   .table-container table {
-    font-size: 10pt;
+    font-size: 10px;
   }
 
   .page-header, .summary-boxes, .print-button {

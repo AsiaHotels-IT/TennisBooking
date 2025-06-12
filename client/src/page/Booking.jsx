@@ -304,14 +304,31 @@ const Booking = () => {
   };
 
   // ฟังก์ชันชำระเงิน
-  const openPaymentModal = (amount) => {
+  const openPaymentModal = (amount, bookingData) => {
     setPaymentAmount(amount);
     setPaymentType('โอนผ่านธนาคาร');
     setCashReceived('');
     setChange(0);
     setPaymentModalOpen(true);
+
+    localStorage.setItem('paymentAmount', amount);
+    localStorage.setItem('cusName', bookingData.cusName);
+    localStorage.setItem('reservID', bookingData.reservID);
+    localStorage.setItem('cusTel', bookingData.cusTel);
+    localStorage.setItem('reservDate', bookingData.reservDate);
+    localStorage.setItem('startTime', bookingData.startTime);
+    localStorage.setItem('endTime', bookingData.endTime);
   };
-  const closePaymentModal = () => setPaymentModalOpen(false);
+  const closePaymentModal = () => {
+    setPaymentModalOpen(false);
+    localStorage.removeItem('paymentAmount');
+    localStorage.removeItem('cusName');
+    localStorage.removeItem('reservID');
+    localStorage.removeItem('cusTel');
+    localStorage.removeItem('reservDate');
+    localStorage.removeItem('startTime');
+    localStorage.removeItem('endTime');
+  };
 
   // ยืนยันการชำระเงิน
   const handleConfirmPayment = async () => {
@@ -496,7 +513,7 @@ const Booking = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => openPaymentModal(Number(selectedEvent.amount))}
+              onClick={() => openPaymentModal(Number(selectedEvent.amount), selectedEvent)}
             >ชำระเงิน
             </Button>
           </div>
