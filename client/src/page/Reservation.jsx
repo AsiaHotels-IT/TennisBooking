@@ -236,114 +236,111 @@ const Reservation = ({ selectedDate }) => {
   };
 
   return (
-    <div style={{ 
-  maxWidth: '500px', 
-  margin: '20px auto', 
-  padding: '25px', 
-  boxShadow: '0 4px 15px rgba(0,0,0,0.1)', 
-  borderRadius: '12px', 
-  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
-  backgroundColor: '#fff' 
-}}>
-  <div style={{ marginBottom: '25px', borderBottom: '2px solid #4caf50', paddingBottom: '8px' }}>
-    <h2 style={{ color: '#2e7d32', margin: 0 }}>รายละเอียดการจอง</h2>
-    {selectedDate ? (
-      <p style={{ color: '#555', fontSize: '14px', marginTop: '5px' }}>
-        วันที่จอง: <strong>{selectedDate}</strong>
-      </p>
-    ) : (
-      <p style={{ color: '#999', fontSize: '14px', marginTop: '5px' }}>
-        ไม่ได้รับวันที่จากหน้าก่อนหน้า
-      </p>
-    )}
-  </div>
+    <div style={{  
+      padding: '5px', 
+      borderRadius: '12px', 
+      fontFamily: "Noto Sans Thai, sans-serif", 
+      backgroundColor: '#fff' 
+    }}>
+      <div style={{ marginBottom: '25px', borderBottom: '2px solid #65000a', paddingBottom: '8px' }}>
+        <h2 style={{ color: '#65000a', margin: 0 }}>รายละเอียดการจอง</h2>
+        {selectedDate ? (
+          <p style={{ color: '#555', fontSize: '14px', marginTop: '5px' }}>
+            วันที่จอง: <strong>{selectedDate}</strong>
+          </p>
+        ) : (
+          <p style={{ color: '#999', fontSize: '14px', marginTop: '5px' }}>
+            ไม่ได้รับวันที่จากหน้าก่อนหน้า
+          </p>
+        )}
+      </div>
+      
+      <form>
+        <label style={labelStyle}>
+          หมายเลขสมาชิก (ถ้ามี) :
+          <input type="text" value={memberID} onChange={(e) => setMemberID(e.target.value)} style={inputStyle} />
+        </label>
+      
+        <label style={labelStyle}>
+          ชื่อลูกค้า :
+          <input type="text" value={cusName} onChange={(e) => setCusName(e.target.value)} style={inputStyle} />
+        </label>
+      
+        <label style={labelStyle}>
+          เบอร์ติดต่อ :
+          <input type="tel" value={cusTel} onChange={(e) => setCusTel(e.target.value)} style={inputStyle} />
+        </label>
+      
+        <label style={labelStyle}>
+          บุคคลอ้างอิง (ถ้ามี) :
+          <input type="text" value={refPerson} onChange={(e) => setRefPerson(e.target.value)} style={inputStyle} />
+        </label>
+      
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '30px 0' }}>
+          <label style={{ ...labelStyle, flex: 1, marginRight: '10px' }}>
+            เวลาเริ่ม:
+            <TimePicker
+              onChange={setStartTime}
+              value={startTime}
+              format="HH:mm"
+              disableClock={true}
+              hourPlaceholder="hh"
+              minutePlaceholder="mm"
+              minTime="00:00"
+              maxTime="23:30"
+              clearIcon={null}
+              required
+              style={timePickerStyle}
+            />
+          </label>
+      
+          <label style={{ ...labelStyle, flex: 1, marginLeft: '10px' }}>
+            เวลาสิ้นสุด:
+            <TimePicker
+              onChange={setEndTime}
+              value={endTime}
+              format="HH:mm"
+              disableClock={true}
+              hourPlaceholder="hh"
+              minutePlaceholder="mm"
+              minTime="00:00"
+              maxTime="23:30"
+              clearIcon={null}
+              required
+              style={timePickerStyle}
+            />
+          </label>
+        </div>
+      
+        {error && (
+          <p style={{ color: 'red', marginBottom: '15px', fontSize: '13px', justifyContent: 'center' }}>
+            {error}
+          </p>
+        )}
 
-  <form>
-    <label style={labelStyle}>
-      หมายเลขสมาชิก (ถ้ามี) :
-      <input type="text" value={memberID} onChange={(e) => setMemberID(e.target.value)} style={inputStyle} />
-    </label>
-
-    <label style={labelStyle}>
-      ชื่อลูกค้า :
-      <input type="text" value={cusName} onChange={(e) => setCusName(e.target.value)} style={inputStyle} />
-    </label>
-
-    <label style={labelStyle}>
-      เบอร์ติดต่อ :
-      <input type="tel" value={cusTel} onChange={(e) => setCusTel(e.target.value)} style={inputStyle} />
-    </label>
-
-    <label style={labelStyle}>
-      บุคคลอ้างอิง (ถ้ามี) :
-      <input type="text" value={refPerson} onChange={(e) => setRefPerson(e.target.value)} style={inputStyle} />
-    </label>
-
-    <div style={{ display: 'flex', justifyContent: 'space-between', margin: '30px 0' }}>
-      <label style={{ ...labelStyle, flex: 1, marginRight: '10px' }}>
-        เวลาเริ่ม:
-        <TimePicker
-          onChange={setStartTime}
-          value={startTime}
-          format="HH:mm"
-          disableClock={true}
-          hourPlaceholder="hh"
-          minutePlaceholder="mm"
-          minTime="00:00"
-          maxTime="23:30"
-          clearIcon={null}
-          required
-          style={timePickerStyle}
-        />
-      </label>
-
-      <label style={{ ...labelStyle, flex: 1, marginLeft: '10px' }}>
-        เวลาสิ้นสุด:
-        <TimePicker
-          onChange={setEndTime}
-          value={endTime}
-          format="HH:mm"
-          disableClock={true}
-          hourPlaceholder="hh"
-          minutePlaceholder="mm"
-          minTime="00:00"
-          maxTime="23:30"
-          clearIcon={null}
-          required
-          style={timePickerStyle}
-        />
-      </label>
+        <div style={{ textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={handleAddBooking}
+            style={{
+              padding: '6px 18px',
+              fontSize: '18px',
+              color: '#65000a',
+              backgroundColor: '#d7ba80',
+              border: 'none',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease',
+              userSelect: 'none',
+              height: '40px',
+              fontFamily: '"Noto Sans Thai", sans-serif',
+            }}
+          >
+            เพิ่มข้อมูล
+          </button>
+        </div>
+      </form>
     </div>
-
-    {error && (
-      <p style={{ color: 'red', marginBottom: '15px', fontWeight: '600' }}>
-        {error}
-      </p>
-    )}
-
-    <div style={{ textAlign: 'center' }}>
-      <button
-        type="button"
-        onClick={handleAddBooking}
-        style={{
-          padding: '12px 35px',
-          fontSize: '17px',
-          backgroundColor: '#4caf50',
-          color: 'white',
-          border: 'none',
-          borderRadius: '30px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(76, 175, 80, 0.5)',
-          transition: 'background-color 0.3s ease',
-        }}
-        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#388e3c'}
-        onMouseLeave={e => e.currentTarget.style.backgroundColor = '#4caf50'}
-      >
-        เพิ่มข้อมูล
-      </button>
-    </div>
-  </form>
-</div>
   );
 };
 
