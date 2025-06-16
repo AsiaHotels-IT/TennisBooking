@@ -22,27 +22,30 @@ const Member = () => {
   };
 
   return (
-    <div style={{padding: '10px'}}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>สมัครสมาชิก</h2>
+    <div style={{ fontFamily: 'Noto Sans Thai, sans-serif'}}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', backgroundColor: '#65000a', padding: 20 }}>
+        <h2 style={{ margin: 0, color: '#fff' }}>สมัครสมาชิก</h2>
         <button 
           onClick={() => navigate('/')}  
           style={{
-            height: '35px',
-            padding: '0 15px',
-            backgroundColor: '#007bff',
-            color: '#fff',
+            padding: '6px 18px',
+            fontSize: '18px',
+            color: '#65000a',
+            backgroundColor: '#d7ba80',
             border: 'none',
-            borderRadius: '5px',
+            borderRadius: '20px',
             cursor: 'pointer',
-            fontWeight: 'bold'
+            transition: 'background-color 0.3s ease',
+            userSelect: 'none',
+            height: '40px',
+            fontFamily: 'Noto Sans Thai, sans-serif'
           }}
         >
           กลับไปที่หน้าจอง
         </button>
       </div>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'row', gap: '15px', alignItems: 'center' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'row', gap: '15px', alignItems: 'center', padding: '0 20px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ marginBottom: '5px', fontWeight: 'bold' }}>ชื่อ:</label>
           <input 
@@ -78,14 +81,17 @@ const Member = () => {
         <button 
           type="submit" 
           style={{
-            marginTop: '20px',
-            backgroundColor: '#28a745',
-            color: '#fff',
+            padding: '6px 18px',
+            fontSize: '18px',
+            color: '#65000a',
+            backgroundColor: '#d7ba80',
             border: 'none',
-            borderRadius: '5px',
-            fontWeight: 'bold',
+            borderRadius: '20px',
             cursor: 'pointer',
-            height: '35px'
+            transition: 'background-color 0.3s ease',
+            userSelect: 'none',
+            height: '40px',
+            fontFamily: 'Noto Sans Thai, sans-serif',
           }}
         >
           สมัครสมาชิก

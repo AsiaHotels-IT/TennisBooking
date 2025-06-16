@@ -63,6 +63,12 @@ const ReservationStadiumSchema = mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    received: {
+        type: Number
+    },
+    changeVal: {
+        type: Number
+    }
 })
 
 ReservationStadiumSchema.plugin(AutoIncrement, {inc_field: "reservID"});

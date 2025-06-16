@@ -40,8 +40,8 @@ const Search = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row' }}>
-      <div style={{ padding: '20px', fontFamily: 'Arial', width: '50%' }}>
+    <div style={{ display: 'flex', flexDirection: 'row',}}>
+      <div style={{ padding: '20px', fontFamily: 'Arial', width: '50%',  fontFamily: 'Noto Sans Thai, sans-serif'  }}>
         <h2>ค้นหาสมาชิก</h2>
         <input
           type="text"
@@ -86,11 +86,17 @@ const Search = () => {
                         setReservPage(1);  // reset หน้าของการจอง
                       }}
                       style={{
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none'
+                        padding: '6px 18px',
+                        fontSize: '14px',
+                        color: '#65000a',
+                        backgroundColor: '#d7ba80',
+                        border: 'none',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                        userSelect: 'none',
+                        height: '40px',
+                        fontFamily: 'Noto Sans Thai, sans-serif',
                       }}
                     >
                       ดูข้อมูลการจอง
@@ -130,7 +136,7 @@ const Search = () => {
         )}
       </div>
 
-      <div style={{ padding: '20px', fontFamily: 'Arial', width: '50%', borderLeft: '1px solid #ccc' }}>
+      <div style={{ padding: '20px', fontFamily: 'Arial', width: '50%', borderLeft: '1px solid #ccc',  fontFamily: 'Noto Sans Thai, sans-serif'  }}>
         <h3>รายละเอียดการจอง</h3>
         {selectedReservation.length > 0 ? (
           <table style={{ borderCollapse: 'collapse', width: '100%' }}>

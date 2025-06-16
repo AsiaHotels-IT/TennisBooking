@@ -5,7 +5,7 @@ import Member from './page/Member';
 import SaleReport from './page/SaleReport';
 import Display from './page/Display';
 import './App.css';
-
+import ReprintReceipt from './page/ReprintReceipt';
 function App() {
   return (
      <BrowserRouter>
@@ -15,6 +15,7 @@ function App() {
         <Route path="/member" element={<Member />} />
         <Route path="/saleReport" element={<SaleReport />} />
         <Route path="/display" element={<Display />} />
+        <Route path="/reprintReceipt" element={<ReprintReceipt />} />
       </Routes>
     </BrowserRouter>
   );

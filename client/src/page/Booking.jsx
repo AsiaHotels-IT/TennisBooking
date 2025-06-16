@@ -12,6 +12,9 @@ import generatePayload from 'promptpay-qr';
 import {QRCodeCanvas}  from 'qrcode.react';  
 import { useNavigate } from 'react-router-dom'; 
 import './Booking.css'; 
+import axios from 'axios';
+import { reprintReceipt } from '../function/auth';
+import auditIcon from '../img/audit.png'
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
@@ -57,6 +60,8 @@ const Booking = () => {
   const [receiptData, setReceiptData] = useState(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
+  const [isReprintOpen, setIsReprintOpen] = useState(false);
+  const [reprintCode, setReprintCode] = useState("");
   const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
   const navigate = useNavigate();
 
@@ -461,17 +466,15 @@ const Booking = () => {
     
           <div class="info-row">
             <p><strong>เลขที่ใบเสร็จ:</strong> ${reservation.receiptNumber || '-'}</p>
-            <p><strong>วันที่ออกใบเสร็จ:</strong> ${reservation.receiptDate ? new Date(reservation.receiptDate).toLocaleString() : '-'}</p>
+            <p><strong>วันที่ออกใบเสร็จ:</strong> ${receiptDate ? new Date(receiptDate).toLocaleString() : '-'}</p>
           </div>
     
           <div class="receipt-details">
             <div class="detail-row"><span class="label">หมายเลขการจอง:</span><span class="value">${reservation.reservID}</span></div>
             <div class="detail-row">
-              <span class="label">ชื่อผู้จอง:</span>
-              <span class="value">${reservation.cusName}</span>
+              <span class="label">ชื่อผู้จอง:</span><span class="value" >${reservation.cusName}</span>
               &nbsp;&nbsp;&nbsp;&nbsp;
-              <span class="label">เบอร์โทร:</span>
-              <span class="value">${reservation.cusTel || '-'}</span>
+              <span class="label">เบอร์โทร:</span><span class="value">${reservation.cusTel || '-'}</span>
             </div>
             <div class="detail-row"><span class="label">วันที่จอง:</span><span class="value">${reservation.reservDate}</span></div>
             <div class="detail-row"><span class="label">เวลา:</span><span class="value">${reservation.startTime} - ${reservation.endTime}</span></div>
@@ -568,7 +571,9 @@ const Booking = () => {
         ...selectedEvent,
         paymentMethod: method,
         receiptNumber, // เพิ่มเลขใบเสร็จเข้าไปในข้อมูล
-        receiptDate: new Date()
+        receiptDate: new Date(),
+        received,
+        changeVal,
       });
 
       setReceiptData({
@@ -609,6 +614,42 @@ const Booking = () => {
     fontFamily: '"Noto Sans Thai", sans-serif',
   };
 
+  const handleReprintReceipt = () => {
+    const correctCode = "1234";
+
+    if (selectedEvent.paymentMethod === 'ยังไม่ชำระเงิน') {
+      alert("ยังไม่สามารถรีปริ๊นได้ เนื่องจากยังไม่ชำระเงิน");
+      setReprintCode("");
+      window.location.reload();
+      return;
+    }
+
+    if (reprintCode === correctCode) {
+      printReceipt(
+        selectedEvent,
+        selectedEvent.paymentMethod,
+        selectedEvent.amount || 0,
+        selectedEvent.received || 0,
+        selectedEvent.changeVal || 0,
+        selectedEvent.receiptDate
+      );
+      setIsReprintOpen(false);
+      setReprintCode("");
+    } else {
+      alert("รหัสยืนยันไม่ถูกต้อง");
+    }
+  };
+
+  const handleProtectedNavigate = () => {
+    const secretCode = prompt("กรุณาใส่รหัสเพื่อเข้าสู่หน้านี้:");
+
+    if (secretCode === "1234") {
+      window.open('/reprintReceipt', '_blank'); // เปิดในแท็บใหม่
+    } else {
+      alert("รหัสไม่ถูกต้อง");
+    }
+  };
+
   return (
     <div className='booking-container'>
       <div style={{ 
@@ -641,6 +682,29 @@ const Booking = () => {
               style={buttonStyle}
             >
               รายงานยอดขาย
+            </button>
+            <button 
+              onClick={handleProtectedNavigate}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '8px 20px',
+                fontSize: '18px',
+                color: '#65000a',
+                backgroundColor: '#d7ba80',
+                border: 'none',
+                borderRadius: '25px',
+                cursor: 'pointer',
+                userSelect: 'none',
+                height: '40px',
+                fontFamily: '"Noto Sans Thai", sans-serif',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+              }}
+              className="reprint-button"
+            >
+              <img src={auditIcon} alt="Audit Icon" style={{width: 30, height: 30}}/>
             </button>
           </div>
         </div>
@@ -771,8 +835,58 @@ const Booking = () => {
                 }}
               >ชำระเงิน
               </Button>
+              <Button
+                  onClick={() => setIsReprintOpen(true)}  // เปิด Modal
+                  style={{
+                  padding: '6px 18px',
+                  fontSize: '18px',
+                  color: '#65000a',
+                  backgroundColor: '#d7ba80',
+                  border: 'none',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s ease',
+                  userSelect: 'none',
+                  height: '40px',
+                  fontFamily: '"Noto Sans Thai", sans-serif',
+                }}
+                >
+                  รีปริ๊นใบเสร็จ
+                </Button>
             </div>
           )}
+          <Modal open={isReprintOpen} onClose={() => setIsReprintOpen(false)}>
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'background.paper',
+              p: 4,
+              borderRadius: 2,
+              boxShadow: 24,
+              width: 400
+            }}>
+              <h2>รีปริ๊นใบเสร็จ</h2>
+              <p>กรุณากรอกรหัสยืนยัน:</p>
+              <input
+                type="text"
+                value={reprintCode}
+                onChange={(e) => setReprintCode(e.target.value)}
+                style={{ width: '100%', padding: '10px', fontSize: '16px' }}
+              />
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                <Button variant="outlined" onClick={() => setIsReprintOpen(false)}>ยกเลิก</Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleReprintReceipt}
+                >
+                  ยืนยัน
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
           <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
             <Box sx={{
               position: 'absolute',

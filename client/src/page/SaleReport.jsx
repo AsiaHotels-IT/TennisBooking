@@ -116,7 +116,7 @@ const SaleReport = () => {
 
   return (
     <div className="sale-report">
-      <div className="page-header">
+      <div className="page-header" >
         <h1>รายงานยอดขาย</h1>
         <button onClick={() => navigate(-1)} 
         style={{
