@@ -9,9 +9,10 @@ const SaleReport = () => {
   const [reservation, setReservation] = useState([]);
   const [cancelReservation, setCancelReservation] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedType, setSelectedType] = useState("booking");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // <<-- เพิ่ม state สำหรับค้นหา
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -80,7 +81,7 @@ const SaleReport = () => {
     }
   };
 
-  // เพิ่ม useEffect เพื่อรีเฟรชตารางเมื่อช่วงวันที่เปลี่ยน
+  // อัพเดท selectedData เมื่อวันที่หรือประเภทเปลี่ยน
   useEffect(() => {
     if (selectedType === "booking") {
       setSelectedData(filteredReservation);
@@ -89,11 +90,48 @@ const SaleReport = () => {
     }
   }, [startDate, endDate, selectedType, filteredReservation, filteredCancelReservation]);
 
+  // ฟังก์ชันกรองข้อมูลด้วย search
+  const filteredSearchData = selectedData.filter(item =>
+    item.cusName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.cusTel.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // คำนวณข้อมูลที่จะแสดงในหน้าปัจจุบัน
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredSearchData.slice(indexOfFirstItem, indexOfLastItem);
+
+  // จำนวนหน้าทั้งหมด
+  const totalPages = Math.ceil(filteredSearchData.length / itemsPerPage);
+
+  // ฟังก์ชันเปลี่ยนหน้า
+  const goToPage = (pageNumber) => {
+    if (pageNumber < 1) pageNumber = 1;
+    else if (pageNumber > totalPages) pageNumber = totalPages;
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="sale-report">
       <div className="page-header">
         <h1>รายงานยอดขาย</h1>
-        <button onClick={() => navigate(-1)}>กลับไปหน้าหลัก</button>
+        <button onClick={() => navigate(-1)} 
+        style={{
+          padding: '6px 18px',
+          fontSize: '18px',
+          color: '#65000a',
+          backgroundColor: '#d7ba80',
+          border: 'none',
+          borderRadius: '20px',
+          cursor: 'pointer',
+          transition: 'background-color 0.3s ease',
+          userSelect: 'none',
+          height: '40px',
+          fontFamily: '"Noto Sans Thai", sans-serif',
+        }}>กลับไปหน้าหลัก</button>
       </div>
 
       <div className="date-filter">
@@ -115,6 +153,22 @@ const SaleReport = () => {
             placeholderText="เลือกวันที่สิ้นสุด"
           />
         </div>
+        <button onClick={() => window.print()} 
+          style={{
+            padding: '6px 18px',
+            fontSize: '18px',
+            color: '#65000a',
+            backgroundColor: '#d7ba80',
+            border: 'none',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s ease',
+            userSelect: 'none',
+            height: '40px',
+            fontFamily: '"Noto Sans Thai", sans-serif',
+          }}>
+          พิมพ์รายงาน
+        </button>
       </div>
 
       <div className="summary-boxes">
@@ -140,22 +194,27 @@ const SaleReport = () => {
         </div>
       </div>
 
-      <button onClick={() => window.print()} className="print-button">
-        พิมพ์รายงาน
-      </button>
-
       {selectedType && (
         <div className="print-area table-container">
-          <h3>รายการ{selectedType === "booking" ? "จอง" : "ยกเลิก"}
-            {startDate || endDate ? (
-              <>
-                {" "}ช่วงวันที่:{" "}
-                {startDate ? startDate.toLocaleDateString('th-TH') : "ไม่กำหนด"}  
-                {" "}ถึง{" "}
-                {endDate ? endDate.toLocaleDateString('th-TH') : "ไม่กำหนด"}
-              </>
-            ) : null}
-          </h3>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px" }}>
+            <h3>รายการ{selectedType === "booking" ? "จอง" : "ยกเลิก"}
+              {startDate || endDate ? (
+                <>
+                  {" "}ช่วงวันที่:{" "}
+                  {startDate ? startDate.toLocaleDateString('th-TH') : "ไม่กำหนด"}  
+                  {" "}ถึง{" "}
+                  {endDate ? endDate.toLocaleDateString('th-TH') : "ไม่กำหนด"}
+                </>
+              ) : null}
+            </h3>
+            <input 
+              type="text" 
+              placeholder="ค้นหาชื่อหรือเบอร์โทร" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ padding: "8px", width: "300px", fontSize: "16px" }}
+            />
+          </div>
 
           <table>
             <thead>
@@ -171,7 +230,7 @@ const SaleReport = () => {
               </tr>
             </thead>
             <tbody>
-              {selectedData.map((item, idx) => (
+              {currentItems.map((item, idx) => (
                 <tr key={idx}>
                   <td>{item.cusName}</td>
                   <td>{item.cusTel}</td>
@@ -185,26 +244,19 @@ const SaleReport = () => {
               ))}
             </tbody>
           </table>
+          <div style={{ marginTop: "10px", display: "flex", justifyContent: "center", gap: "10px", alignItems: "center" }}>
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
+              ก่อนหน้า
+            </button>
+            <span>หน้า {currentPage} / {totalPages}</span>
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages || totalPages === 0}>
+              ถัดไป
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
-};
-
-const boxStyle = {
-  background: "#f4f4f4",
-  padding: "20px",
-  borderRadius: "10px",
-  boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-  width: "200px",
-  textAlign: "center",
-  cursor: "pointer"
-};
-
-const boxStyleHighlight = {
-  ...boxStyle,
-  background: "#d1ffd1",
-  border: "2px solid #00aa00"
 };
 
 export default SaleReport;

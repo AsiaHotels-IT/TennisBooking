@@ -4,6 +4,8 @@ import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import { createReservations } from '../function/reservation';
 import logo from '../img/logo.png'; 
+import moment from 'moment';
+
 
 const Reservation = ({ selectedDate }) => {
   const [startTime, setStartTime] = useState('00:00');
@@ -78,6 +80,7 @@ const Reservation = ({ selectedDate }) => {
       }
     }
   };
+  
 
   const printReservationForm = (reservation) => {
       const reservDate = reservation.reservDate;
@@ -95,13 +98,13 @@ const Reservation = ({ selectedDate }) => {
         startTime,
         endTime,
         price: price || '-',  // ใช้ราคาจริงถ้ามี
-  
+        createAt: moment(reservation.createAt).format('DD/MM/YYYY HH:mm') || '-'
       });
     };
   
-    const printReservationFormContent = ({ cusName, cusTel, selectedDate, startTime, endTime, price, reservID, memID, paymentMethod, reffPerson }) => {
-      const printWindow = window.open('', '', 'width=800,height=600');
-      printWindow.document.write(`
+    const printReservationFormContent = ({ cusName, cusTel, selectedDate, startTime, endTime, price, reservID, memID, paymentMethod, reffPerson, createAt }) => {
+        const printWindow = window.open('', '', 'width=800,height=600');
+        printWindow.document.write(`
         <html>
           <head>
             <title>ใบจองสนามเทนนิส</title>
@@ -109,87 +112,144 @@ const Reservation = ({ selectedDate }) => {
               @media print {
                 @page {
                   size: A5 portrait;
-                  margin: 10mm;
+                  margin: 0;
                 }
               }
-  
+            
               body {
-                font-family: 'Noto Sans Thai', sans-serif;
-                font-size: 11pt;
+                font-family: 'TH Sarabun New', 'Sarabun', sans-serif;
+                font-size: 16pt;
                 color: #000;
                 margin: 0;
                 padding: 0;
+                background: #fff;
               }
-  
+            
               .container {
-                border: 2px solid black;
+                width: 100%;
+                max-width: 480px;
+                margin: auto;
+                padding: 10px;
                 box-sizing: border-box;
-                width: 100vw;
-                height: 100vh;
-                padding: 20px;
               }
+              
               .header {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-bottom: 12px;
+                text-align: center;
+                margin-bottom: 20px;
               }
-  
+            
               .header img {
-                height: 40px;
-                margin-right: 10px;
+                height: 80px;
+                width: auto;
+                margin-bottom: 10px;
               }
-  
+            
               .header h2 {
+                margin: 0;
+                font-size: 18pt;
+              }
+            
+              .header p {
                 margin: 0;
                 font-size: 14pt;
               }
-  
-              table {
-                width: 100%;
-                font-size: 11pt;
-                border-collapse: collapse;
+            
+              .contact-info {
+                margin-top: 5px;
+                font-size: 14pt;
               }
-  
-              td {
-                padding: 6px 4px;
-                vertical-align: top;
-                line-height: 1.4;
+            
+              .title {
+                text-align: center;
+                font-size: 18pt;
+                font-weight: bold;
+                margin: 20px 0 10px 0;
               }
-  
-              .signature {
-                margin-top: 20px;
-                text-align: right;
-                padding-right: 20px;
-                font-size: 11pt;
+            
+              .info-row {
+                display: flex;
+                justify-content: space-between;
+                font-size: 14pt;
+                margin-bottom: 10px;
+              }
+            
+              .reservation-details {
+                border: 1px solid #000;
+                border-radius: 10px;
+                padding: 20px;
+                background-color: #fff;
+                margin-top: 10px;
+              }
+            
+              .detail-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+              }
+            
+              .label {
+                font-weight: bold;
+                color: #000;
+              }
+            
+              .value {
+                color: #000;
+              }
+                
+              .signature-container {
+                display: flex;
+                justify-content: space-between;
+                padding: 0 20px;
+              }
+            
+              .signature-block {
+                text-align: center;
+                width: 40%;
+                font-size: 14pt;
               }
             </style>
           </head>
           <body>
             <div class="container">
               <div class="header">
-                <img src="${logo}" alt="Logo">
-                <h2>ใบจองสนามเทนนิส</h2>
+                <img src="${logo}" alt="Logo">    
+                <h2>โรงแรมเอเชีย</h2>
+                <p>296 ถนนพญาไท แขวงถนนเพชรบุรี เขตราชเทวี กรุงเทพมหานคร 10400</p>  
+                <div class="contact-info">
+                  <p><strong>โทรศัพท์:</strong> 02-217-0808 &nbsp; <strong>อีเมล:</strong> booking@asiahotel.co.th</p>
+                </div>       
               </div>
-  
-              <table>
-                <tr><td><strong>หมายเลขการจอง:</strong></td><td>${reservID}</td></tr>
-                <tr><td><strong>หมายเลขสมาชิก:</strong></td><td>${memID}</td></tr>
-                <tr><td><strong>ชื่อผู้จอง:</strong></td><td>${cusName}</td></tr>
-                <tr><td><strong>เบอร์โทร:</strong></td><td>${cusTel || '-'}</td></tr>
-                <tr><td><strong>วันที่จอง:</strong></td><td>${selectedDate}</td></tr>
-                <tr><td><strong>เวลา:</strong></td><td>${startTime} - ${endTime}</td></tr>
-                <tr><td><strong>ราคาทั้งหมด:</strong></td><td>${price || '-'} บาท</td></tr>
-                <tr><td><strong>สถานะชำระเงิน:</strong></td><td>${paymentMethod}</td></tr>
-                <tr><td><strong>บุคคลอ้างอิง:</strong></td><td>${reffPerson}</td></tr>
-              </table>
-  
-              <div class="signature">
-                <p>ลงชื่อ.................................................</p>
-                <p>(พนักงาน)</p>
+            
+              <div class="title">ใบจองสนามเทนนิส</div>
+            
+              <div class="info-row">
+                <p><strong>หมายเลขการจอง:</strong> 00${reservID}</p>
+                <p><strong>วันที่:</strong> ${createAt}</p>
+              </div>
+            
+              <div class="reservation-details">
+                <div class="detail-row"><span class="label">หมายเลขสมาชิก:</span><span class="value">${memID}</span></div>
+                <div class="detail-row"><span class="label">ชื่อผู้จอง:</span><span class="value">${cusName}</span></div>
+                <div class="detail-row"><span class="label">เบอร์โทร:</span><span class="value">${cusTel || '-'}</span></div>
+                <div class="detail-row"><span class="label">วันที่จอง:</span><span class="value">${selectedDate}</span></div>
+                <div class="detail-row"><span class="label">เวลา:</span><span class="value">${startTime} - ${endTime}</span></div>
+                <div class="detail-row"><span class="label">ราคาทั้งหมด:</span><span class="value">${price || '-'} บาท</span></div>
+                <div class="detail-row"><span class="label">สถานะชำระเงิน:</span><span class="value">${paymentMethod}</span></div>
+                <div class="detail-row"><span class="label">บุคคลอ้างอิง:</span><span class="value">${reffPerson}</span></div>
+              </div>
+            
+              <div class="signature-container">
+                <div class="signature-block">
+                  <p>ลงชื่อ....................................</p>
+                  <p>(พนักงาน)</p>
+                </div>
+            
+                <div class="signature-block">
+                  <p>ลงชื่อ....................................</p>
+                  <p>(ลูกค้า)</p>
+                </div>
               </div>
             </div>
-  
             <script>
               window.onload = function () {
                 window.print();
@@ -200,9 +260,9 @@ const Reservation = ({ selectedDate }) => {
             </script>
           </body>
         </html>
-      `);
-      printWindow.document.close();
-    };
+        `);
+        printWindow.document.close();
+      };
 
   const labelStyle = {
     display: 'block',
