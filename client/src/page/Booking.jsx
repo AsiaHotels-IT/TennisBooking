@@ -61,6 +61,7 @@ const Booking = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [isReprintOpen, setIsReprintOpen] = useState(false);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [reprintCode, setReprintCode] = useState("");
   const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
   const navigate = useNavigate();
@@ -615,7 +616,7 @@ const Booking = () => {
   };
 
   const handleReprintReceipt = () => {
-    const correctCode = "1234";
+    const correctCode = "audit@022170808";
 
     if (selectedEvent.paymentMethod === 'ยังไม่ชำระเงิน') {
       alert("ยังไม่สามารถรีปริ๊นได้ เนื่องจากยังไม่ชำระเงิน");
@@ -641,12 +642,14 @@ const Booking = () => {
   };
 
   const handleProtectedNavigate = () => {
-    const secretCode = prompt("กรุณาใส่รหัสเพื่อเข้าสู่หน้านี้:");
-
-    if (secretCode === "1234") {
-      window.open('/reprintReceipt', '_blank'); // เปิดในแท็บใหม่
+    const correctCode = "audit@022170808";
+  
+    if (reprintCode === correctCode) {
+      window.open('/reprintReceipt', '_blank');  // เปิดแท็บใหม่
+      setIsAuditOpen(false);  // ปิด modal ให้ถูกตัวด้วยนะครับ
+      setReprintCode("");
     } else {
-      alert("รหัสไม่ถูกต้อง");
+      alert("รหัสยืนยันไม่ถูกต้อง");
     }
   };
 
@@ -684,7 +687,7 @@ const Booking = () => {
               รายงานยอดขาย
             </button>
             <button 
-              onClick={handleProtectedNavigate}
+              onClick={() => setIsAuditOpen(true)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -704,7 +707,7 @@ const Booking = () => {
               }}
               className="reprint-button"
             >
-              <img src={auditIcon} alt="Audit Icon" style={{width: 30, height: 30}}/>
+              <img src={auditIcon} alt="Audit Icon" style={{ width: 30, height: 30 }} />
             </button>
           </div>
         </div>
@@ -855,6 +858,44 @@ const Booking = () => {
                 </Button>
             </div>
           )}
+          <Modal open={isAuditOpen} onClose={() => setIsAuditOpen(false)}>
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'background.paper',
+              p: 4,
+              borderRadius: 2,
+              boxShadow: 24,
+              width: 400
+            }}>
+              <h2>Audit</h2>
+              <p>กรุณากรอกรหัสยืนยัน:</p>
+              <input
+                type="password"
+                value={reprintCode}
+                onChange={(e) => setReprintCode(e.target.value)} // แก้ตรงนี้ ให้ set state ตัวถูกต้อง
+                style={{ width: '100%', padding: '10px', fontSize: '16px' }}
+                autoFocus
+              />
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                <Button variant="outlined" onClick={() => {
+                  setIsAuditOpen(false);
+                  setReprintCode('');
+                }}>
+                  ยกเลิก
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleProtectedNavigate}
+                >
+                  ยืนยัน
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
           <Modal open={isReprintOpen} onClose={() => setIsReprintOpen(false)}>
             <Box sx={{
               position: 'absolute',
@@ -870,7 +911,7 @@ const Booking = () => {
               <h2>รีปริ๊นใบเสร็จ</h2>
               <p>กรุณากรอกรหัสยืนยัน:</p>
               <input
-                type="text"
+                type="password"
                 value={reprintCode}
                 onChange={(e) => setReprintCode(e.target.value)}
                 style={{ width: '100%', padding: '10px', fontSize: '16px' }}
