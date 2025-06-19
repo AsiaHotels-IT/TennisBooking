@@ -295,39 +295,39 @@ const Booking = () => {
   };
 
   const handleEventDrop = ({ event, start, end, allDay }) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // รีเซ็ตเวลาให้เหลือแค่วันที่
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    const newDate = new Date(start);
-    newDate.setHours(0, 0, 0, 0);
+  const newDate = new Date(start);
+  newDate.setHours(0, 0, 0, 0);
 
-    const oldDate = new Date(event.start);
-    oldDate.setHours(0, 0, 0, 0);
+  const oldDate = new Date(event.start);
+  oldDate.setHours(0, 0, 0, 0);
 
-    // 1. ห้ามย้าย event ไปวันที่ก่อนวันนี้
-    if (newDate < today) {
-      alert("ไม่สามารถย้ายไปวันก่อนวันนี้ได้");
-      return;
-    }
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
 
-    // 2. ห้ามย้ายจากวานนี้มาวันนี้ หรือวันนี้ไปวานนี้
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const isMoveFromYesterdayToToday = oldDate.getTime() === yesterday.getTime() && newDate.getTime() === today.getTime();
-    const isMoveFromTodayToYesterday = oldDate.getTime() === today.getTime() && newDate.getTime() === yesterday.getTime();
-
-    if (isMoveFromYesterdayToToday || isMoveFromTodayToYesterday) {
-      alert("ไม่สามารถย้ายวันจากวานนี้มายังวันนี้ หรือจากวันนี้ไปวานนี้ได้");
-      return;
-    }
-
-    // ถ้าผ่านเงื่อนไขทั้งหมดแล้ว ค่อยให้มันทำงานต่อ (เปิด modal ยืนยัน)
-    setDraggedEvent(event);
-    setNewStart(start);
-    setNewEnd(end);
-    setIsModalOpen(true);
+  // ❌ ห้ามย้ายไปก่อนวันนี้
+  if (newDate < today) {
+    alert("ไม่สามารถย้ายไปวันก่อนวันนี้ได้");
+    return;
   }
+
+  // ❌ ห้ามย้ายจากวานนี้มายังวันนี้ หรือวันหลังจากนี้
+  const isFromYesterday = oldDate.getTime() === yesterday.getTime();
+  const isMoveToTodayOrFuture = newDate.getTime() >= today.getTime();
+
+  if (isFromYesterday && isMoveToTodayOrFuture) {
+    alert("ไม่สามารถย้ายจากวานนี้มายังวันนี้หรือวันถัดไปได้");
+    return;
+  }
+
+  // ✅ ผ่านเงื่อนไขแล้ว
+  setDraggedEvent(event);
+  setNewStart(start);
+  setNewEnd(end);
+  setIsModalOpen(true);
+};
 
   const handleDeleteReservation = async (reservID) => {
     if (!reservID) {
