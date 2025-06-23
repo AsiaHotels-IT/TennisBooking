@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -41,6 +41,30 @@ const formats = {
     `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
 };
 
+function CustomEventComponent({ event }) {
+  return (
+    <div
+      style={{ width: '100%', height: '100%' }}
+      onContextMenu={e => {
+        e.preventDefault();
+        const normalizedEvent = { ...event, reservID: event.reservID || event.id };
+        // ใช้ window.dispatchEvent ส่ง custom event เพื่อให้ Booking รับค่า
+        window.dispatchEvent(
+          new CustomEvent('custom-event-context-menu', {
+            detail: {
+              event: normalizedEvent,
+              mouseX: e.clientX + 2,
+              mouseY: e.clientY - 6,
+            }
+          })
+        );
+      }}
+    >
+      {event.title}
+    </div>
+  );
+}
+
 const Booking = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +72,7 @@ const Booking = () => {
   const [date, setDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);  // เก็บวันที่คลิกเลือก
   const [selectedEvent, setSelectedEvent] = useState(null); // เพิ่มสำหรับ event ที่คลิก
+  const [contextMenu, setContextMenu] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [draggedEvent, setDraggedEvent] = useState(null);
@@ -68,6 +93,7 @@ const Booking = () => {
 
   // สร้าง payload promptpay qr ตามเบอร์และจำนวนเงิน
   const qrPayload = generatePayload(paymentPromptPayID, { amount: paymentAmount });
+  const contextMenuRef = useRef(null);
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -93,6 +119,39 @@ const Booking = () => {
     }
   }, [cashReceived, paymentAmount, paymentType]);
 
+  useEffect(() => {
+  const handleCustomMenu = async (e) => {
+    setContextMenu({
+      mouseX: e.detail.mouseX,
+      mouseY: e.detail.mouseY,
+    });
+    try {
+      const res = await getReservationById(e.detail.event.reservID);
+      setSelectedEvent({ ...res.data, reservID: res.data.reservID || res.data.id });
+    } catch (error) {
+      setSelectedEvent(e.detail.event);
+      console.error("โหลดข้อมูลใบจองล้มเหลว", error);
+    }
+  };
+  window.addEventListener('custom-event-context-menu', handleCustomMenu);
+  return () => window.removeEventListener('custom-event-context-menu', handleCustomMenu);
+}, []);
+
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+      setContextMenu(null);
+    }
+  };
+
+  if (contextMenu) {
+    window.addEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    window.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [contextMenu]);
   if (loading) {
     return <div>กำลังโหลดข้อมูล...</div>;
   }
@@ -335,15 +394,23 @@ const Booking = () => {
       return;
     }
     try {
-      await deleteReservations(reservID); // <- ฟังก์ชันที่เรียก axios.delete
-      const res = await getReservations();
-      const mappedEvents = mapReservationsToEvents(res.data);
-      setEvents(mappedEvents);
-      window.location.reload(); 
-    } catch (error) {
-      console.error("ลบใบจองล้มเหลว", error);
+    const res = await getReservationById(reservID);
+    const reservation = res.data;
+
+    if (reservation.paymentMethod !== 'ยังไม่ชำระเงิน') {
+      alert("ไม่สามารถยกเลิกใบจองได้ เนื่องจากชำระเงินแล้ว ไม่คืนเงินทุกกรณี");
+      return;
     }
-  };
+
+    await deleteReservations(reservID);
+    const reservations = await getReservations();
+    const mappedEvents = mapReservationsToEvents(reservations.data);
+    setEvents(mappedEvents);
+    window.location.reload();
+  } catch (error) {
+    console.error("ลบใบจองล้มเหลว", error);
+  }
+};
 
   const printReceipt = (reservation, paymentMethod, amount, received, changeVal, receiptDate) => {
     const printWindow = window.open('', '', 'width=800,height=600');
@@ -715,6 +782,7 @@ const Booking = () => {
         <div style={{flex:4}}>
           <DragAndDropCalendar
             className='calendar'
+            components={{ event: CustomEventComponent }}
             localizer={localizer}
             formats={formats}
             events={events}
@@ -739,16 +807,13 @@ const Booking = () => {
             eventPropGetter={(event) => {
               let backgroundColor = '';
               let borderColor = '';
-
-              const now = new Date(); // เวลาปัจจุบัน
+              const now = new Date();
               const start = new Date(event.start);
               const end = new Date(event.end);
-
-              // ตรวจสอบว่าเวลาปัจจุบันอยู่ระหว่าง start และ end
               const isCurrent = now >= start && now <= end;
 
               if (isCurrent) {
-                backgroundColor = '#FFD700'; // สีทอง สำหรับ event ที่กำลังเกิดขึ้น
+                backgroundColor = '#FFD700';
                 borderColor = '#FFA000';
               } else if (event.paymentMethod === 'ยังไม่ชำระเงิน') {
                 backgroundColor = '#FF5722';
@@ -766,8 +831,16 @@ const Booking = () => {
                   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
                   fontSize: '14px',
                   transition: 'transform 0.2s',
-                }
-              }
+                },
+                onContextMenu: (e) => {
+                  e.preventDefault(); // ปิดเมนูเบราว์เซอร์
+                  setContextMenu({
+                    mouseX: e.clientX + 2,
+                    mouseY: e.clientY - 6,
+                  });
+                  setSelectedEvent(event.id); // เก็บ event ที่คลิก
+                },
+              };
             }}
             onSelectSlot={(slotInfo) => setSelectedDate(slotInfo.start)}
             onSelectEvent={async (event) => {
@@ -781,13 +854,24 @@ const Booking = () => {
             }}
             onEventDrop={handleEventDrop}
           />
-          {selectedEvent && (
-            <div style={{ marginTop: 10, display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => printReservationForm(selectedEvent)}
+          {contextMenu && selectedEvent && (
+            <div
+              ref={contextMenuRef}
+              style={{
+                position: 'fixed',
+                top: contextMenu.mouseY,
+                left: contextMenu.mouseX,
+                backgroundColor: '#fff',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                borderRadius: '8px',
+                padding: '10px',
+                zIndex: 9999,
+              }}
+            >
+              <button onClick={() => printReservationForm(selectedEvent)}
                 style={{
-                  padding: '6px 18px',
-                  fontSize: '18px',
+                  padding: '6px 6px',
+                  fontSize: '14px',
                   color: '#65000a',
                   backgroundColor: '#d7ba80',
                   border: 'none',
@@ -795,17 +879,16 @@ const Booking = () => {
                   cursor: 'pointer',
                   transition: 'background-color 0.3s ease',
                   userSelect: 'none',
-                  height: '40px',
+                  height: '30px',
                   fontFamily: '"Noto Sans Thai", sans-serif',
-                }}
-              >
-                ดูใบจอง
-              </button>
-              <button
-                onClick={() => setIsCancelOpen(true)}
-                style={{
-                  padding: '6px 18px',
-                  fontSize: '18px',
+                }}>ดูใบจอง</button>
+              <button onClick={() => {
+                setIsCancelOpen(true);
+                setContextMenu(null);
+              }}
+              style={{
+                  padding: '6px 6px',
+                  fontSize: '14px',
                   color: '#65000a',
                   backgroundColor: '#d7ba80',
                   border: 'none',
@@ -813,19 +896,16 @@ const Booking = () => {
                   cursor: 'pointer',
                   transition: 'background-color 0.3s ease',
                   userSelect: 'none',
-                  height: '40px',
+                  height: '30px',
                   fontFamily: '"Noto Sans Thai", sans-serif',
-                }}
-              >
-                ยกเลิกใบจอง
-              </button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => openPaymentModal(Number(selectedEvent.amount), selectedEvent)}
-                style={{
-                  padding: '6px 18px',
-                  fontSize: '18px',
+                }}>ยกเลิกใบจอง</button>
+              <button onClick={() => {
+                openPaymentModal(Number(selectedEvent.amount), selectedEvent);
+                setContextMenu(null);
+              }}
+              style={{
+                  padding: '6px 6px',
+                  fontSize: '14px',
                   color: '#65000a',
                   backgroundColor: '#d7ba80',
                   border: 'none',
@@ -833,16 +913,14 @@ const Booking = () => {
                   cursor: 'pointer',
                   transition: 'background-color 0.3s ease',
                   userSelect: 'none',
-                  height: '40px',
+                  height: '30px',
                   fontFamily: '"Noto Sans Thai", sans-serif',
-                }}
-              >ชำระเงิน
-              </Button>
+                }}>ชำระเงิน</button>
               <Button
                   onClick={() => setIsReprintOpen(true)}  // เปิด Modal
                   style={{
-                  padding: '6px 18px',
-                  fontSize: '18px',
+                  padding: '6px 6px',
+                  fontSize: '14px',
                   color: '#65000a',
                   backgroundColor: '#d7ba80',
                   border: 'none',
@@ -850,7 +928,7 @@ const Booking = () => {
                   cursor: 'pointer',
                   transition: 'background-color 0.3s ease',
                   userSelect: 'none',
-                  height: '40px',
+                  height: '30px',
                   fontFamily: '"Noto Sans Thai", sans-serif',
                 }}
                 >
