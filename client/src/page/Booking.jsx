@@ -645,7 +645,7 @@ const Booking = () => {
     fontFamily: '"Noto Sans Thai", sans-serif',
   };
 
-  const handleReprintReceipt = () => {
+  const handleReprintReceipt = async () => {
     const correctCode = "audit@022170808";
 
     if (selectedEvent.paymentMethod === 'ยังไม่ชำระเงิน') {
@@ -666,6 +666,11 @@ const Booking = () => {
       );
       setIsReprintOpen(false);
       setReprintCode("");
+      await reprintReceipt({
+        reservID: selectedEvent.reservID,
+        receiptNumber: selectedEvent.receiptNumber, // <--- เพิ่มเลขที่ใบเสร็จ
+        printedAt: new Date()
+      });
     } else {
       alert("รหัสยืนยันไม่ถูกต้อง");
     }
@@ -844,47 +849,47 @@ const Booking = () => {
                 ดูใบจอง
               </button>
               {!isPastOrYesterday(selectedEvent.reservDate) && (
-  <>
-    <button
-      onClick={() => setIsCancelOpen(true)}
-      style={{
-        padding: '6px 18px',
-        fontSize: '18px',
-        color: '#65000a',
-        backgroundColor: '#d7ba80',
-        border: 'none',
-        borderRadius: '20px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s ease',
-        userSelect: 'none',
-        height: '40px',
-        fontFamily: '"Noto Sans Thai", sans-serif',
-      }}
-    >
-      ยกเลิกใบจอง
-    </button>
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => openPaymentModal(Number(selectedEvent.amount), selectedEvent)}
-      style={{
-        padding: '6px 18px',
-        fontSize: '18px',
-        color: '#65000a',
-        backgroundColor: '#d7ba80',
-        border: 'none',
-        borderRadius: '20px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s ease',
-        userSelect: 'none',
-        height: '40px',
-        fontFamily: '"Noto Sans Thai", sans-serif',
-      }}
-    >
-      ชำระเงิน
-    </Button>
-  </>
-)}
+                <>
+                  <button
+                    onClick={() => setIsCancelOpen(true)}
+                    style={{
+                      padding: '6px 18px',
+                      fontSize: '18px',
+                      color: '#65000a',
+                      backgroundColor: '#d7ba80',
+                      border: 'none',
+                      borderRadius: '20px',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.3s ease',
+                      userSelect: 'none',
+                      height: '40px',
+                      fontFamily: '"Noto Sans Thai", sans-serif',
+                    }}
+                  >
+                    ยกเลิกใบจอง
+                  </button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => openPaymentModal(Number(selectedEvent.amount), selectedEvent)}
+                    style={{
+                      padding: '6px 18px',
+                      fontSize: '18px',
+                      color: '#65000a',
+                      backgroundColor: '#d7ba80',
+                      border: 'none',
+                      borderRadius: '20px',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.3s ease',
+                      userSelect: 'none',
+                      height: '40px',
+                      fontFamily: '"Noto Sans Thai", sans-serif',
+                    }}
+                  >
+                    ชำระเงิน
+                  </Button>
+                </>
+              )}
               <Button
                   onClick={() => setIsReprintOpen(true)}  // เปิด Modal
                   style={{
