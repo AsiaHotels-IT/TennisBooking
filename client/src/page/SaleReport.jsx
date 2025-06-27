@@ -180,6 +180,10 @@ const SaleReport = () => {
           <h3>จำนวนที่ยกเลิก</h3>
           <p>{totalCancelCount} รายการ</p>
         </div>
+        <div className="box" onClick={() => handleCardClick("cash")}>
+          <h3>ชำระเงินสด</h3>
+          <p> รายการ</p>
+        </div>
         <div className="box">
           <h3>ยอดจองทั้งหมด</h3>
           <p>{totalBookingAmount.toLocaleString()} บาท</p>

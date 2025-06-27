@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -12,7 +12,6 @@ import generatePayload from 'promptpay-qr';
 import {QRCodeCanvas}  from 'qrcode.react';  
 import { useNavigate } from 'react-router-dom'; 
 import './Booking.css'; 
-import axios from 'axios';
 import { reprintReceipt } from '../function/auth';
 import auditIcon from '../img/audit.png'
 
@@ -66,6 +65,10 @@ const Booking = () => {
   const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState(null); 
+  const [searchText, setSearchText] = useState("");
+  const [matchingEvents, setMatchingEvents] = useState([]);
+  const [showSearchList, setShowSearchList] = useState(false);
+  const calendarRef = useRef(null);
 
   // สร้าง payload promptpay qr ตามเบอร์และจำนวนเงิน
   const qrPayload = generatePayload(paymentPromptPayID, { amount: paymentAmount });
@@ -85,6 +88,27 @@ const Booking = () => {
 
     fetchReservations();
   }, []);
+
+  useEffect(() => {
+    if (!searchText) {
+      setMatchingEvents([]);
+      setShowSearchList(false);
+      return;
+    }
+    // กรองชื่อที่มีใน events
+    const matched = events.filter(ev =>
+      ev.title.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setMatchingEvents(matched);
+    setShowSearchList(matched.length > 0);
+  }, [searchText, events]);
+
+  const handleSelectSearchEvent = (ev) => {
+    setDate(ev.start);    // เลื่อนไปวันนั้น
+    setView('day');       // เปลี่ยนเป็นมุมมองรายวัน
+    setShowSearchList(false);
+    setSearchText("");    // clear ช่องค้นหา (หรือคงไว้ก็ได้)
+  };
 
    // เปลี่ยนเงินสด คำนวณเงินทอนทันที
   useEffect(() => {
@@ -325,39 +349,39 @@ const Booking = () => {
   };
 
   const handleEventDrop = ({ event, start, end, allDay }) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const newDate = new Date(start);
-  newDate.setHours(0, 0, 0, 0);
+    const newDate = new Date(start);
+    newDate.setHours(0, 0, 0, 0);
 
-  const oldDate = new Date(event.start);
-  oldDate.setHours(0, 0, 0, 0);
+    const oldDate = new Date(event.start);
+    oldDate.setHours(0, 0, 0, 0);
 
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
-  // ❌ ห้ามย้ายไปก่อนวันนี้
-  if (newDate < today) {
-    alert("ไม่สามารถย้ายไปวันก่อนวันนี้ได้");
-    return;
-  }
+    // ❌ ห้ามย้ายไปก่อนวันนี้
+    if (newDate < today) {
+      alert("ไม่สามารถย้ายไปวันก่อนวันนี้ได้");
+      return;
+    }
 
-  // ❌ ห้ามย้ายจากวานนี้มายังวันนี้ หรือวันหลังจากนี้
-  const isFromYesterday = oldDate.getTime() === yesterday.getTime();
-  const isMoveToTodayOrFuture = newDate.getTime() >= today.getTime();
+    // ❌ ห้ามย้ายจากวานนี้มายังวันนี้ หรือวันหลังจากนี้
+    const isFromYesterday = oldDate.getTime() === yesterday.getTime();
+    const isMoveToTodayOrFuture = newDate.getTime() >= today.getTime();
 
-  if (isFromYesterday && isMoveToTodayOrFuture) {
-    alert("ไม่สามารถย้ายจากวานนี้มายังวันนี้หรือวันถัดไปได้");
-    return;
-  }
+    if (isFromYesterday && isMoveToTodayOrFuture) {
+      alert("ไม่สามารถย้ายจากวานนี้มายังวันนี้หรือวันถัดไปได้");
+      return;
+    }
 
-  // ✅ ผ่านเงื่อนไขแล้ว
-  setDraggedEvent(event);
-  setNewStart(start);
-  setNewEnd(end);
-  setIsModalOpen(true);
-};
+    // ✅ ผ่านเงื่อนไขแล้ว
+    setDraggedEvent(event);
+    setNewStart(start);
+    setNewEnd(end);
+    setIsModalOpen(true);
+  };
 
   const handleDeleteReservation = async (reservID) => {
     if (!reservID) {
@@ -700,66 +724,137 @@ const Booking = () => {
 
   return (
     <div className='booking-container'>
-      <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: '15px 20px', 
-          backgroundColor: '#65000a', 
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '15px 20px',
+          backgroundColor: '#65000a',
           color: '#fff',
           marginBottom: '20px',
-        }}>
-          <h1 style={{ 
-            margin: 0, 
-            fontWeight: '700', 
+          flexWrap: 'wrap', // ให้รองรับหน้าจอเล็ก
+          gap: '10px'
+        }}
+      >
+        {/* Title */}
+        <h1
+          style={{
+            margin: 0,
+            fontWeight: '700',
             fontSize: '1.8rem',
             userSelect: 'none',
             letterSpacing: '1px',
-          }}>
-            Tennis Booking
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <button 
-              onClick={() => navigate("/member")} 
-              style={buttonStyle}
-            >
-              เพิ่มสมาชิก
-            </button>
-            <button 
-              onClick={() => navigate("/saleReport")} 
-              style={buttonStyle}
-            >
-              รายงานยอดขาย
-            </button>
-            <button 
-              onClick={() => setIsAuditOpen(true)}
+            flex: '1 0 auto',
+            minWidth: '180px'
+          }}
+        >
+          Tennis Booking
+        </h1>
+        
+        {/* Right Controls */}
+        <div
+          style={{
+            display: 'flex',
+            flex: '2',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
+            minWidth: '300px',
+          }}
+        >
+        {/* Buttons */}
+        <button
+          onClick={() => navigate("/member")}
+          style={buttonStyle}
+        >
+          เพิ่มสมาชิก
+          </button>
+          <button
+            onClick={() => navigate("/saleReport")}
+            style={buttonStyle}
+          >
+            รายงานยอดขาย
+          </button>
+          <button
+            onClick={() => setIsAuditOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px 16px',
+              fontSize: '16px',
+              color: '#65000a',
+              backgroundColor: '#d7ba80',
+              border: 'none',
+              borderRadius: '25px',
+              cursor: 'pointer',
+              userSelect: 'none',
+              height: '40px',
+              fontFamily: '"Noto Sans Thai", sans-serif',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+              transition: 'all 0.3s ease',
+            }}
+            className="reprint-button"
+          >
+            <img src={auditIcon} alt="Audit Icon" style={{ width: 24, height: 24 }} />
+          </button>
+          {/* Search */}
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อผู้จอง..."
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px 20px',
-                fontSize: '18px',
-                color: '#65000a',
-                backgroundColor: '#d7ba80',
-                border: 'none',
-                borderRadius: '25px',
-                cursor: 'pointer',
-                userSelect: 'none',
-                height: '40px',
-                fontFamily: '"Noto Sans Thai", sans-serif',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
+                flexGrow: 1,
+                minWidth: '200px',
+                maxWidth: '250px',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+                fontSize: 16,
+                fontFamily: 'Noto Sans Thai, sans-serif',
+                boxSizing: 'border-box',
               }}
-              className="reprint-button"
-            >
-              <img src={auditIcon} alt="Audit Icon" style={{ width: 30, height: 30 }} />
-            </button>
-          </div>
+              onFocus={() => setShowSearchList(matchingEvents.length > 0)}
+            />
         </div>
+      </div>
       <div style={{ display:'flex', flexDirection:'row' }}>
+        {showSearchList && (
+          <div style={{
+            position: "absolute",
+            top: 50, 
+            right: 0,
+            zIndex: 99,
+            background: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            maxHeight: 300,
+            minWidth: 280,
+            overflowY: "auto",
+            boxShadow: "0 4px 32px rgba(0,0,0,0.13)",
+          }}>
+            {matchingEvents.length === 0 && <div style={{ padding: 12, color: "#888" }}>ไม่พบรายการ</div>}
+            {matchingEvents.map(ev => (
+              <div
+                key={ev.id + String(ev.start)}
+                style={{ padding: 12, cursor: "pointer", borderBottom: "1px solid #eee" }}
+                onClick={() => handleSelectSearchEvent(ev)}
+              >
+                <b>{ev.cusName || ev.title}</b>
+                <div style={{ fontSize: 13, color: "#555" }}>
+                  {moment(ev.start).format("DD/MM/YYYY HH:mm")} - {moment(ev.end).format("HH:mm")}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div style={{flex:4}}>
           <DragAndDropCalendar
             className='calendar'
+            ref={calendarRef}
             localizer={localizer}
             formats={formats}
             events={events}
@@ -785,11 +880,9 @@ const Booking = () => {
             eventPropGetter={(event) => {
               let backgroundColor = '';
               let borderColor = '';
-
               const now = new Date(); // เวลาปัจจุบัน
               const start = new Date(event.start);
               const end = new Date(event.end);
-
               // ตรวจสอบว่าเวลาปัจจุบันอยู่ระหว่าง start และ end
               const isCurrent = now >= start && now <= end;
 
@@ -827,6 +920,7 @@ const Booking = () => {
             }}
             onEventDrop={handleEventDrop}
           />
+          
           {contextMenu && selectedEvent && (
             <div style={{ marginTop: 10, display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button
