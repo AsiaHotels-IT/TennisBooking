@@ -15,3 +15,11 @@ export const reprintReceipt = async(data)=>{
 export const listreprintReceipt = async()=>{
     return await axios.get(process.env.REACT_APP_API + '/reprintReceipt', )
 }
+
+export const register = async(data)=>{
+    await axios.post(process.env.REACT_APP_API + '/register', data)
+}
+
+export const login = async(data)=>{
+    await axios.post(process.env.REACT_APP_API + '/login', data)
+}

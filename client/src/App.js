@@ -6,11 +6,18 @@ import SaleReport from './page/SaleReport';
 import Display from './page/Display';
 import './App.css';
 import ReprintReceipt from './page/ReprintReceipt';
+import Register from './page/auth/Register';
+import Login from './page/auth/Login';
+
 function App() {
   return (
      <BrowserRouter>
+     <Routes>
+      <Route path="/register" element={<Register />} />
+      <Route path="/" element={<Login />} />
+     </Routes>
       <Routes>
-        <Route path="/" element={<Booking />} />
+        <Route path="/booking" element={<Booking />} />
         <Route path="/reservation" element={<Reservation />} />
         <Route path="/member" element={<Member />} />
         <Route path="/saleReport" element={<SaleReport />} />
