@@ -771,35 +771,6 @@ const Booking = () => {
         >
           เพิ่มสมาชิก
           </button>
-          <button
-            onClick={() => navigate("/saleReport")}
-            style={buttonStyle}
-          >
-            รายงานยอดขาย
-          </button>
-          <button
-            onClick={() => setIsAuditOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px 16px',
-              fontSize: '16px',
-              color: '#65000a',
-              backgroundColor: '#d7ba80',
-              border: 'none',
-              borderRadius: '25px',
-              cursor: 'pointer',
-              userSelect: 'none',
-              height: '40px',
-              fontFamily: '"Noto Sans Thai", sans-serif',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-              transition: 'all 0.3s ease',
-            }}
-            className="reprint-button"
-          >
-            <img src={auditIcon} alt="Audit Icon" style={{ width: 24, height: 24 }} />
-          </button>
           {/* Search */}
             <input
               type="text"
@@ -1004,44 +975,6 @@ const Booking = () => {
                 </Button>
             </div>
           )}
-          <Modal open={isAuditOpen} onClose={() => setIsAuditOpen(false)}>
-            <Box sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              bgcolor: 'background.paper',
-              p: 4,
-              borderRadius: 2,
-              boxShadow: 24,
-              width: 400
-            }}>
-              <h2>Audit</h2>
-              <p>กรุณากรอกรหัสยืนยัน:</p>
-              <input
-                type="password"
-                value={reprintCode}
-                onChange={(e) => setReprintCode(e.target.value)} // แก้ตรงนี้ ให้ set state ตัวถูกต้อง
-                style={{ width: '100%', padding: '10px', fontSize: '16px' }}
-                autoFocus
-              />
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-                <Button variant="outlined" onClick={() => {
-                  setIsAuditOpen(false);
-                  setReprintCode('');
-                }}>
-                  ยกเลิก
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleProtectedNavigate}
-                >
-                  ยืนยัน
-                </Button>
-              </Box>
-            </Box>
-          </Modal>
           <Modal open={isReprintOpen} onClose={() => setIsReprintOpen(false)}>
             <Box sx={{
               position: 'absolute',

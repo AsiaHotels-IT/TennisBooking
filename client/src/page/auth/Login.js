@@ -9,12 +9,11 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import AppTheme from '../../component/AppTheme';
 import ColorModeSelect from '../../component/ColorModeSelect';
 import { SitemarkIcon } from '../../component/CustomIcons';
 import { login } from '../../function/auth';
+import { useNavigate } from 'react-router-dom';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -59,33 +58,47 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function Login(props) {
-  const [role, setRole] = React.useState('');
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
+  const [loginError, setLoginError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
-  const handleRoleChange = (event) => {
-    setRole(event.target.value);
-  };
+  const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoginError('');
+    setLoading(true);
+
     const data = new FormData(event.currentTarget);
-    const asia = {
+    const loginData = {
       username: data.get('username'),
       password: data.get('password'),
-      role: data.get('role'),
     };
-    console.log(asia);
-    login(asia)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => console.log(err));
-  };
+    console.log('loginData', loginData); // ดูค่าที่ส่งจริง
 
+    try {
+      const res = await login(loginData);
+      console.log('response', res); // ดู response ที่ได้กลับมา
+      if (res && res.data.user) {
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        if (res.data.user.role === 'cashier') {
+            navigate('/booking');
+          } else if (res.data.user.role === 'auditor') {
+            navigate('/auditBooking');
+          } else {
+            navigate('/');
+          }
+      }
+    } catch (err) {
+      setLoginError(err.response?.data?.message || err.message || 'เข้าสู่ระบบไม่สำเร็จ');
+      console.log('error', err.response?.data); // ดู error ที่เกิด
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -100,6 +113,11 @@ export default function Login(props) {
           >
             LogIn
           </Typography>
+          {loginError && (
+            <Typography color="error" sx={{ textAlign: 'center', mb: 2 }}>
+              {loginError}
+            </Typography>
+          )}
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -142,22 +160,8 @@ export default function Login(props) {
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
-            <FormControl fullWidth>
-              <FormLabel htmlFor="role">Role</FormLabel>
-              <Select
-                labelId="role-label"
-                id="role"
-                name="role"
-                value={role}
-                onChange={handleRoleChange}
-                required
-              >
-                <MenuItem value="auditor">Auditor</MenuItem>
-                <MenuItem value="cashier">Cashier</MenuItem>
-              </Select>
-            </FormControl>
-            <Button type="submit" fullWidth variant="contained">
-              Sign in
+            <Button type="submit" fullWidth variant="contained" disabled={loading}>
+              {loading ? 'กำลังเข้าสู่ระบบ...' : 'Sign in'}
             </Button>
           </Box>
         </Card>

@@ -1,11 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const {list, read, create, remove} = require('../controllers/reprintReceipt')
-const {auth} = require('../middleware/auth');
 
-router.get('/reprintReceipt',auth, list)
-router.get('/reprintReceipt/:id',auth, read)
-router.post('/reprintReceipt',auth, create)
-router.delete('/reprintReceipt/:id',auth, remove)
+router.get('/reprintReceipt', list)
+router.get('/reprintReceipt/:id', read)
+router.post('/reprintReceipt', create)
+router.delete('/reprintReceipt/:id', remove)
 
 module.exports = router

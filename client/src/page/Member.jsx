@@ -26,7 +26,7 @@ const Member = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', backgroundColor: '#65000a', padding: 20 }}>
         <h2 style={{ margin: 0, color: '#fff' }}>สมัครสมาชิก</h2>
         <button 
-          onClick={() => navigate('/')}  
+          onClick={() => navigate('/booking')}  
           style={{
             padding: '6px 18px',
             fontSize: '18px',

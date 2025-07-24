@@ -8,21 +8,36 @@ import './App.css';
 import ReprintReceipt from './page/ReprintReceipt';
 import Register from './page/auth/Register';
 import Login from './page/auth/Login';
+import UserRoute from './Routes/UserRoute';
+import AuditRoute from './Routes/AuditRoute';
+//For Audit
+import AuditBooking from './page/audit/AuditBooking';
+import AuditReservation from './page/audit/AuditReservation';
+import AuditMember from './page/audit/AuditMember';
+import AuditSaleReport from './page/audit/AuditSaleReport';
+import AuditDisplay from './page/audit/AuditDisplay';
+import AuditReprintReceipt from './page/audit/AuditReprintReceipt';
 
 function App() {
   return (
      <BrowserRouter>
-     <Routes>
-      <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Login />} />
-     </Routes>
       <Routes>
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/reservation" element={<Reservation />} />
-        <Route path="/member" element={<Member />} />
-        <Route path="/saleReport" element={<SaleReport />} />
-        <Route path="/display" element={<Display />} />
-        <Route path="/reprintReceipt" element={<ReprintReceipt />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        <Route path="/auditBooking" element={<AuditRoute><AuditBooking /></AuditRoute>} />
+        <Route path="/auditMember" element={<AuditRoute><AuditMember /></AuditRoute>} />
+        <Route path="/auditReservation" element={<AuditRoute><AuditReservation /></AuditRoute>} />
+        <Route path="/auditSaleReport" element={<AuditRoute><AuditSaleReport /></AuditRoute>} />
+        <Route path="/auditDisplay" element={<AuditRoute><AuditDisplay /></AuditRoute>} />
+        <Route path="/auditReprintReceipt" element={<AuditRoute><AuditReprintReceipt /></AuditRoute>} />
+
+        <Route path="/booking" element={<UserRoute><Booking /></UserRoute>} />
+        <Route path="/reservation" element={<UserRoute><Reservation /></UserRoute>} />
+        <Route path="/member" element={<UserRoute><Member /></UserRoute>} />
+        <Route path="/saleReport" element={<UserRoute><SaleReport /></UserRoute>} />
+        <Route path="/display" element={<UserRoute><Display /></UserRoute>} />
+        <Route path="/reprintReceipt" element={<UserRoute><ReprintReceipt /></UserRoute>} />
       </Routes>
     </BrowserRouter>
   );

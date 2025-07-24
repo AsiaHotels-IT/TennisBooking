@@ -1,55 +1,51 @@
 const User = require('../model/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
+// สมัครสมาชิก
 exports.register = async (req, res) => {
-    try{
-        const { username, password, role } = req.body;
-        var user = await User.findOne({username})
-        console.log(user)
-        if(user){
-            return res.send('User already exists!!').status(400);
-        }
-        user = new User({
-            username,
-            password,
-            role
-        })
-        await user.save();
-        res.send('User registered successfully').status(201);
-    }catch(err){
-        res.status(500).send('Server Error');
+  try {
+    const { username, password, role } = req.body;
+    let user = await User.findOne({ username });
+    if (user) {
+      return res.status(400).send('User already exists!!');
     }
-}
+    user = new User({
+      username,
+      password, // เก็บ plain text!
+      role
+    });
+    await user.save();
+    res.status(201).send('User registered successfully');
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
 
+// ล็อกอิน
 exports.login = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await User.findOne({ username });
-        if (user && user.role === "auditor") {
-            if (password === user.password) {
-                const { token, payload } = generateToken(user);
-                res.json({ message: 'Welcome Auditor', token, payload });
-            } else {
-                res.status(401).send('Invalid password');
-            }
-        } else if (user && user.role === "cashier") {
-            if (password === user.password) {
-                const { token, payload } = generateToken(user);
-                res.json({ message: 'Welcome Cashier', token, payload });
-            } else {
-                res.status(401).send('Invalid password');
-            }
-        } else {
-            res.status(404).send('User not found');
-        }
-    } catch (err) {
-        res.status(500).send('Server Error');
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).send('User not found...');
     }
-}
+    if (password !== user.password) {
+      return res.status(400).send('Password is not correct');
+    }
+    // เก็บ user info ใน session
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      role: user.role
+    };
+    res.send({ success: true, user: req.session.user });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
 
-function generateToken(user) {
-    const payload = { user: { name: user.username, role: user.role } };
-    const token = jwt.sign(payload, 'jwtsecret', { expiresIn: '8h' });
-    return { token, payload };
-}
+// logout
+exports.logout = async (req, res) => {
+  req.session.destroy(() => {
+    res.send({ success: true });
+  });
+};
