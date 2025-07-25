@@ -2,6 +2,7 @@ import React, {useState} from 'react'
 import { useNavigate } from 'react-router-dom'
 import { addMember } from '../function/auth';
 import Search from './Search';
+import Header from '../component/Header';
 
 const Member = () => {
   const navigate = useNavigate();
@@ -23,8 +24,16 @@ const Member = () => {
 
   return (
     <div style={{ fontFamily: 'Noto Sans Thai, sans-serif'}}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', backgroundColor: '#65000a', padding: 20 }}>
-        <h2 style={{ margin: 0, color: '#fff' }}>สมัครสมาชิก</h2>
+      <Header title="สมัครสมาชิก" />
+      
+      {/* Navigation */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        alignItems: 'center', 
+        marginBottom: '20px', 
+        padding: '0 20px' 
+      }}>
         <button 
           onClick={() => navigate('/booking')}  
           style={{

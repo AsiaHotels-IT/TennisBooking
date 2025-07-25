@@ -13,7 +13,8 @@ import {QRCodeCanvas}  from 'qrcode.react';
 import { useNavigate } from 'react-router-dom'; 
 import './AuditBooking.css'; 
 import { reprintReceipt } from '../../function/auth';
-import auditIcon from '../../img/audit.png'
+import auditIcon from '../../img/audit.png';
+import Header from '../../component/Header';
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);

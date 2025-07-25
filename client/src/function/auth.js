@@ -23,3 +23,7 @@ export const register = async (data) => {
 export const login = async (data) => {
   return await axios.post(process.env.REACT_APP_API + '/login', data, { withCredentials: true });
 };
+
+export const logout = async () => {
+  return await axios.post(process.env.REACT_APP_API + '/logout', {}, { withCredentials: true });
+};
