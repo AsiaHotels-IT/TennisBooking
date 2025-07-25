@@ -7,8 +7,6 @@ const Search = () => {
   const [selectedReservation, setSelectedReservation] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
-  const [reservPage, setReservPage] = useState(1);
-  const reservPerPage = 5; // จำนวนแถวต่อหน้า
 
   const loadMembers = async () => {
     try {
@@ -41,7 +39,7 @@ const Search = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row',}}>
-      <div style={{ padding: '20px', fontFamily: 'Arial', width: '50%',  fontFamily: 'Noto Sans Thai, sans-serif'  }}>
+      <div style={{ padding: '20px', width: '50%', fontFamily: 'Noto Sans Thai, sans-serif' }}>
         <h2>ค้นหาสมาชิก</h2>
         <input
           type="text"
@@ -83,7 +81,6 @@ const Search = () => {
                     <button
                       onClick={() => {
                         setSelectedReservation(member.reservationBefore);
-                        setReservPage(1);  // reset หน้าของการจอง
                       }}
                       style={{
                         padding: '6px 18px',
@@ -136,7 +133,7 @@ const Search = () => {
         )}
       </div>
 
-      <div style={{ padding: '20px', fontFamily: 'Arial', width: '50%', borderLeft: '1px solid #ccc',  fontFamily: 'Noto Sans Thai, sans-serif'  }}>
+      <div style={{ padding: '20px', width: '50%', borderLeft: '1px solid #ccc', fontFamily: 'Noto Sans Thai, sans-serif' }}>
         <h3>รายละเอียดการจอง</h3>
         {selectedReservation.length > 0 ? (
           <table style={{ borderCollapse: 'collapse', width: '100%' }}>

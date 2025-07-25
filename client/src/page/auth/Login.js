@@ -58,10 +58,10 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function Login(props) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+  // const [emailError, setEmailError] = React.useState(false); // not used
+  // const [emailErrorMessage, setEmailErrorMessage] = React.useState(''); // not used
+  // const [passwordError, setPasswordError] = React.useState(false); // not used
+  // const [passwordErrorMessage, setPasswordErrorMessage] = React.useState(''); // not used
   const [loginError, setLoginError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
@@ -132,8 +132,6 @@ export default function Login(props) {
             <FormControl>
               <FormLabel htmlFor="username">Username</FormLabel>
               <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
                 id="username"
                 name="username"
                 placeholder="Username"
@@ -141,14 +139,12 @@ export default function Login(props) {
                 required
                 fullWidth
                 variant="outlined"
-                color={emailError ? 'error' : 'primary'}
+                color="primary"
               />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
                 name="password"
                 placeholder="••••••"
                 type="password"
@@ -157,7 +153,7 @@ export default function Login(props) {
                 required
                 fullWidth
                 variant="outlined"
-                color={passwordError ? 'error' : 'primary'}
+                color="primary"
               />
             </FormControl>
             <Button type="submit" fullWidth variant="contained" disabled={loading}>

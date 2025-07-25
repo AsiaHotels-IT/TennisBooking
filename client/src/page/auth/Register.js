@@ -60,11 +60,11 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 
 export default function Register(props) {
   const [role, setRole] = React.useState('');
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
+  // const [emailError, setEmailError] = React.useState(false); // not used
+  // const [emailErrorMessage, setEmailErrorMessage] = React.useState(''); // not used
+  // const [passwordError, setPasswordError] = React.useState(false); // not used
+  // const [passwordErrorMessage, setPasswordErrorMessage] = React.useState(''); // not used
+  // const [open, setOpen] = React.useState(false); // not used
 
   const handleRoleChange = (event) => {
     setRole(event.target.value);
@@ -114,8 +114,6 @@ export default function Register(props) {
             <FormControl>
               <FormLabel htmlFor="username">Username</FormLabel>
               <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
                 id="username"
                 name="username"
                 placeholder="Username"
@@ -123,14 +121,12 @@ export default function Register(props) {
                 required
                 fullWidth
                 variant="outlined"
-                color={emailError ? 'error' : 'primary'}
+                color="primary"
               />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
                 name="password"
                 placeholder="••••••"
                 type="password"
@@ -139,7 +135,7 @@ export default function Register(props) {
                 required
                 fullWidth
                 variant="outlined"
-                color={passwordError ? 'error' : 'primary'}
+                color="primary"
               />
             </FormControl>
             <FormControl fullWidth>

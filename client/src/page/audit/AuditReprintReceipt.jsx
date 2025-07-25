@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom'; // not used
 import { listreprintReceipt } from '../../function/auth';
 
 const AuditReprintReceipt = () => {
@@ -7,7 +7,7 @@ const AuditReprintReceipt = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // not used
 
   useEffect(() => {
     fetchReprintData();

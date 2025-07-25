@@ -13,7 +13,7 @@ import {QRCodeCanvas}  from 'qrcode.react';
 import { useNavigate } from 'react-router-dom'; 
 import './AuditBooking.css'; 
 import { reprintReceipt } from '../../function/auth';
-import auditIcon from '../../img/audit.png'
+import auditIcon from '../../img/audit.png';
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
@@ -62,7 +62,7 @@ const AuditBooking = () => {
   const [isReprintOpen, setIsReprintOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [reprintCode, setReprintCode] = useState("");
-  const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
+  const [paymentPromptPayID] = useState('0946278508');
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState(null); 
   const [searchText, setSearchText] = useState("");
@@ -717,7 +717,7 @@ const AuditBooking = () => {
     if (!dateString) return true;
     // dateString ในที่นี้ควรเป็น "DD/MM/YYYY"
     const today = moment().startOf('day');
-    const yesterday = moment().subtract(1, 'days').startOf('day');
+    // const yesterday = moment().subtract(1, 'days').startOf('day'); // not used
     const reservDate = moment(dateString, 'DD/MM/YYYY').startOf('day');
     return reservDate.isBefore(today); // ถ้าเป็นวานหรือวันก่อนหน้า return true
   };

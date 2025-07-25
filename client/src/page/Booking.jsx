@@ -13,7 +13,7 @@ import {QRCodeCanvas}  from 'qrcode.react';
 import { useNavigate } from 'react-router-dom'; 
 import './Booking.css'; 
 import { reprintReceipt } from '../function/auth';
-import auditIcon from '../img/audit.png'
+import Header from '../component/Header';
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
@@ -60,9 +60,8 @@ const Booking = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [isReprintOpen, setIsReprintOpen] = useState(false);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [reprintCode, setReprintCode] = useState("");
-  const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
+  const [paymentPromptPayID] = useState('0946278508');
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState(null); 
   const [searchText, setSearchText] = useState("");
@@ -700,96 +699,63 @@ const Booking = () => {
     }
   };
 
-  const handleProtectedNavigate = () => {
-    const correctCode = "audit@022170808";
-  
-    if (reprintCode === correctCode) {
-      window.open('/reprintReceipt', '_blank');  // เปิดแท็บใหม่
-      setIsAuditOpen(false);  // ปิด modal ให้ถูกตัวด้วยนะครับ
-      setReprintCode("");
-    } else {
-      alert("รหัสยืนยันไม่ถูกต้อง");
-    }
-  };
-
   // ฟังก์ชันเช็คว่าเป็นวันก่อนหน้าหรือวานนี้ไหม
   const isPastOrYesterday = (dateString) => {
     if (!dateString) return true;
     // dateString ในที่นี้ควรเป็น "DD/MM/YYYY"
     const today = moment().startOf('day');
-    const yesterday = moment().subtract(1, 'days').startOf('day');
+    // const yesterday = moment().subtract(1, 'days').startOf('day'); // not used
     const reservDate = moment(dateString, 'DD/MM/YYYY').startOf('day');
     return reservDate.isBefore(today); // ถ้าเป็นวานหรือวันก่อนหน้า return true
   };
 
   return (
     <div className='booking-container'>
+      <Header title="ระบบจองสนามเทนนิส" />
+      
+      {/* Search and Navigation Bar */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '15px 20px',
-          backgroundColor: '#65000a',
-          color: '#fff',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '8px',
           marginBottom: '20px',
-          flexWrap: 'wrap', // ให้รองรับหน้าจอเล็ก
+          flexWrap: 'wrap',
           gap: '10px'
         }}
       >
-        {/* Title */}
-        <h1
-          style={{
-            margin: 0,
-            fontWeight: '700',
-            fontSize: '1.8rem',
-            userSelect: 'none',
-            letterSpacing: '1px',
-            flex: '1 0 auto',
-            minWidth: '180px'
-          }}
-        >
-          Tennis Booking
-        </h1>
-        
-        {/* Right Controls */}
-        <div
-          style={{
-            display: 'flex',
-            flex: '2',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: '12px',
-            flexWrap: 'wrap',
-            minWidth: '300px',
-          }}
-        >
-        {/* Buttons */}
-        <button
-          onClick={() => navigate("/member")}
-          style={buttonStyle}
-        >
-          เพิ่มสมาชิก
+        {/* Left side buttons */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            onClick={() => navigate("/member")}
+            style={buttonStyle}
+          >
+            เพิ่มสมาชิก
           </button>
-          {/* Search */}
-            <input
-              type="text"
-              placeholder="ค้นหาชื่อผู้จอง..."
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              style={{
-                flexGrow: 1,
-                minWidth: '200px',
-                maxWidth: '250px',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-                fontSize: 16,
-                fontFamily: 'Noto Sans Thai, sans-serif',
-                boxSizing: 'border-box',
-              }}
-              onFocus={() => setShowSearchList(matchingEvents.length > 0)}
-            />
+        </div>
+        
+        {/* Right side search */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <input
+            type="text"
+            placeholder="ค้นหาชื่อผู้จอง..."
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            style={{
+              minWidth: '200px',
+              maxWidth: '250px',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '1px solid #ccc',
+              fontSize: 16,
+              fontFamily: 'Noto Sans Thai, sans-serif',
+              boxSizing: 'border-box',
+            }}
+            onFocus={() => setShowSearchList(matchingEvents.length > 0)}
+          />
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'row' }}>
