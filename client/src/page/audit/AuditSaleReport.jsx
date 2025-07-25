@@ -14,6 +14,7 @@ const AuditSaleReport = () => {
   const [endDate, setEndDate] = useState(null);
   const [searchTerm, setSearchTerm] = useState(""); // <<-- เพิ่ม state สำหรับค้นหา
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     fetchData();

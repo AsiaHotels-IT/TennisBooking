@@ -150,7 +150,8 @@ exports.remove = async (req, res) => {
       status: 'ยกเลิก',
       paymentMethod: reservation.paymentMethod,
       refPerson: reservation.refPerson,
-      amount: reservation.amount
+      amount: reservation.amount,
+      username: reservation.username, 
     });
 
     await cancelData.save();

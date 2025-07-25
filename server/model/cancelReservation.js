@@ -49,6 +49,11 @@ const cancelReservationSchema = new mongoose.Schema({
     amount: {
         type: Number
     },
+    username:{
+        type: String,
+        maxlength: 100,
+        required: true,
+    },
     cancelDate: {
         type: Date,
         default: Date.now

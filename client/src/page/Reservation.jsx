@@ -53,6 +53,7 @@ const Reservation = ({ selectedDate }) => {
         startTime,
         endTime,
         price,  // เพิ่มตรงนี้
+        username: user.name
       };
 
       const response = await createReservations(payload);
@@ -295,12 +296,21 @@ const Reservation = ({ selectedDate }) => {
     boxSizing: 'border-box',
   };
 
+    //ดึงข้อมูล user จาก localStorage
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+
   return (
     <div style={{  
       padding: '5px', 
       borderRadius: '12px', 
       fontFamily: "Noto Sans Thai, sans-serif", 
-      backgroundColor: '#fff' 
+      backgroundColor: '#fff',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%', // ให้กล่องสูงเต็มพื้นที่
+      minHeight: 600, // หรือกำหนดตามที่ต้องการ
+      position: 'relative' // สำหรับ absolute ด้านล่างถ้าต้องการ
     }}>
       <div style={{ marginBottom: '25px', borderBottom: '2px solid #65000a', paddingBottom: '8px' }}>
         <h2 style={{ color: '#65000a', margin: 0 }}>รายละเอียดการจอง</h2>
@@ -400,6 +410,7 @@ const Reservation = ({ selectedDate }) => {
           </button>
         </div>
       </form>
+      
     </div>
   );
 };

@@ -53,6 +53,7 @@ const AuditReservation = ({ selectedDate }) => {
         startTime,
         endTime,
         price,  // เพิ่มตรงนี้
+        username: user.name,
       };
 
       const response = await createReservations(payload);
@@ -71,7 +72,6 @@ const AuditReservation = ({ selectedDate }) => {
         refPerson: response.data.refPerson,
       });
       window.location.reload();
-
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         alert(error.response.data.message);
@@ -293,6 +293,9 @@ const AuditReservation = ({ selectedDate }) => {
     fontSize: '15px',
     boxSizing: 'border-box',
   };
+
+  //ดึงข้อมูล user จาก localStorage
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   return (
     <div style={{  

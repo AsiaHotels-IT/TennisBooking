@@ -6,7 +6,6 @@ import SaleReport from './page/SaleReport';
 import Display from './page/Display';
 import './App.css';
 import ReprintReceipt from './page/ReprintReceipt';
-import Register from './page/auth/Register';
 import Login from './page/auth/Login';
 import UserRoute from './Routes/UserRoute';
 import AuditRoute from './Routes/AuditRoute';
@@ -17,13 +16,13 @@ import AuditMember from './page/audit/AuditMember';
 import AuditSaleReport from './page/audit/AuditSaleReport';
 import AuditDisplay from './page/audit/AuditDisplay';
 import AuditReprintReceipt from './page/audit/AuditReprintReceipt';
+import AuditUser from './page/audit/AuditUser'; 
 
 function App() {
   return (
      <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         
         <Route path="/auditBooking" element={<AuditRoute><AuditBooking /></AuditRoute>} />
         <Route path="/auditMember" element={<AuditRoute><AuditMember /></AuditRoute>} />
@@ -31,6 +30,7 @@ function App() {
         <Route path="/auditSaleReport" element={<AuditRoute><AuditSaleReport /></AuditRoute>} />
         <Route path="/auditDisplay" element={<AuditRoute><AuditDisplay /></AuditRoute>} />
         <Route path="/auditReprintReceipt" element={<AuditRoute><AuditReprintReceipt /></AuditRoute>} />
+        <Route path="/register" element={<AuditRoute><AuditUser/></AuditRoute>}/>
 
         <Route path="/booking" element={<UserRoute><Booking /></UserRoute>} />
         <Route path="/reservation" element={<UserRoute><Reservation /></UserRoute>} />

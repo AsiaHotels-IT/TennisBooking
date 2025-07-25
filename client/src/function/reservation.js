@@ -11,7 +11,7 @@ export const createReservations = async (data)=>
 
 export const updateReservations = async (id, data) =>
   await axios.put(`${process.env.REACT_APP_API}/reservation/${id}`, data);
-
+  
 export const deleteReservations = async (id) =>
   await axios.delete(`${process.env.REACT_APP_API}/reservation/${id}`);
 

@@ -21,6 +21,11 @@ const memberSchema = mongoose.Schema({
         type: Date,
         default: Date()
     },
+    username:{
+        type: String,
+        maxlength: 100,
+        required: true,
+    },
     reservationBefore: [
         {
             type: mongoose.Schema.Types.ObjectId,

@@ -5,15 +5,14 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { getReservations, getReservationById, updateReservations, deleteReservations } from '../function/reservation';
-import Reservation from '../page/Reservation';
+import Reservation from './Reservation';
 import logo from '../img/logo.png'; 
 import { Modal, Box, Button, RadioGroup, FormControlLabel, Radio, TextField } from '@mui/material';
 import generatePayload from 'promptpay-qr';
 import {QRCodeCanvas}  from 'qrcode.react';  
 import { useNavigate } from 'react-router-dom'; 
 import './Booking.css'; 
-import { reprintReceipt } from '../function/auth';
-import auditIcon from '../img/audit.png'
+import { reprintReceipt , checkPassword, logout} from '../function/auth';
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
@@ -62,13 +61,14 @@ const Booking = () => {
   const [isReprintOpen, setIsReprintOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [reprintCode, setReprintCode] = useState("");
-  const [paymentPromptPayID, setPaymentPromptPayID] = useState('0946278508');
+  const [paymentPromptPayID, setPaymentPromptPayID] = useState(process.env.REACT_APP_PROMYPAY_API); // เบอร์ PromptPay
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState(null); 
   const [searchText, setSearchText] = useState("");
   const [matchingEvents, setMatchingEvents] = useState([]);
   const [showSearchList, setShowSearchList] = useState(false);
   const calendarRef = useRef(null);
+  const [reprintPassword, setReprintPassword] = useState("");
 
   // สร้าง payload promptpay qr ตามเบอร์และจำนวนเงิน
   const qrPayload = generatePayload(paymentPromptPayID, { amount: paymentAmount });
@@ -383,13 +383,13 @@ const Booking = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteReservation = async (reservID) => {
+  const handleDeleteReservation = async (reservID, name) => {
     if (!reservID) {
       console.error("❌ ไม่พบ reservID สำหรับลบใบจอง");
       return;
     }
     try {
-      await deleteReservations(reservID); // <- ฟังก์ชันที่เรียก axios.delete
+      await deleteReservations(reservID, name); // <- ฟังก์ชันที่เรียก axios.delete
       const res = await getReservations();
       const mappedEvents = mapReservationsToEvents(res.data);
       setEvents(mappedEvents);
@@ -629,6 +629,7 @@ const Booking = () => {
         receiptDate: new Date(),
         received,
         changeVal,
+        username: user.name,
       });
 
       setReceiptData({
@@ -670,16 +671,23 @@ const Booking = () => {
   };
 
   const handleReprintReceipt = async () => {
-    const correctCode = "audit@022170808";
-
     if (selectedEvent.paymentMethod === 'ยังไม่ชำระเงิน') {
       alert("ยังไม่สามารถรีปริ๊นได้ เนื่องจากยังไม่ชำระเงิน");
-      setReprintCode("");
+      setReprintPassword("");
       window.location.reload();
       return;
     }
 
-    if (reprintCode === correctCode) {
+    try {
+      const res = await checkPassword({
+        username: user.username, // หรือ user.name ตาม DB
+        password: reprintPassword
+      });
+      if (!res.data.success) {
+        alert("รหัสผ่านไม่ถูกต้อง");
+        return;
+      }
+      // ถ้ารหัสผ่านถูกต้อง
       printReceipt(
         selectedEvent,
         selectedEvent.paymentMethod,
@@ -689,14 +697,15 @@ const Booking = () => {
         selectedEvent.receiptDate
       );
       setIsReprintOpen(false);
-      setReprintCode("");
+      setReprintPassword("");
       await reprintReceipt({
         reservID: selectedEvent.reservID,
-        receiptNumber: selectedEvent.receiptNumber, // <--- เพิ่มเลขที่ใบเสร็จ
-        printedAt: new Date()
+        receiptNumber: selectedEvent.receiptNumber,
+        printedAt: new Date(),
+        username: user.name,
       });
-    } else {
-      alert("รหัสยืนยันไม่ถูกต้อง");
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
     }
   };
 
@@ -722,6 +731,18 @@ const Booking = () => {
     return reservDate.isBefore(today); // ถ้าเป็นวานหรือวันก่อนหน้า return true
   };
 
+  // ดึงข้อมูล user จาก localStorage
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  
+  const handleLogout = async () => {
+    try {
+      await logout(); 
+      localStorage.removeItem('user'); 
+      window.location.href = "/"; 
+    } catch (err) {
+      alert('ออกจากระบบไม่สำเร็จ');
+    }
+  };
   return (
     <div className='booking-container'>
       <div
@@ -749,9 +770,9 @@ const Booking = () => {
             minWidth: '180px'
           }}
         >
-          Tennis Booking
+          Tennis Booking 
         </h1>
-        
+        {user ? `ยินดีต้อนรับ, ${user.name}` : 'กรุณาเข้าสู่ระบบ'}
         {/* Right Controls */}
         <div
           style={{
@@ -771,6 +792,35 @@ const Booking = () => {
         >
           เพิ่มสมาชิก
           </button>
+          <button
+            onClick={() => navigate("/saleReport")}
+            style={buttonStyle}
+          >
+            รายงานยอดขาย
+          </button>
+          <div style={{
+            marginTop: 'auto', // ดัน logout ไปชิดล่างสุด
+            display: 'flex',
+          }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: '6px 18px',
+                fontSize: '18px',
+                color: '#fff',
+                backgroundColor: '#c62828',
+                border: 'none',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s ease',
+                userSelect: 'none',
+                height: '40px',
+                fontFamily: '"Noto Sans Thai", sans-serif',
+              }}
+            >
+              Logout
+            </button>
+          </div>
           {/* Search */}
             <input
               type="text"
@@ -790,6 +840,7 @@ const Booking = () => {
               }}
               onFocus={() => setShowSearchList(matchingEvents.length > 0)}
             />
+            
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'row' }}>
@@ -975,6 +1026,44 @@ const Booking = () => {
                 </Button>
             </div>
           )}
+          <Modal open={isAuditOpen} onClose={() => setIsAuditOpen(false)}>
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'background.paper',
+              p: 4,
+              borderRadius: 2,
+              boxShadow: 24,
+              width: 400
+            }}>
+              <h2>Audit</h2>
+              <p>กรุณากรอกรหัสยืนยัน:</p>
+              <input
+                type="password"
+                value={reprintCode}
+                onChange={(e) => setReprintCode(e.target.value)} // แก้ตรงนี้ ให้ set state ตัวถูกต้อง
+                style={{ width: '100%', padding: '10px', fontSize: '16px' }}
+                autoFocus
+              />
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                <Button variant="outlined" onClick={() => {
+                  setIsAuditOpen(false);
+                  setReprintCode('');
+                }}>
+                  ยกเลิก
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleProtectedNavigate}
+                >
+                  ยืนยัน
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
           <Modal open={isReprintOpen} onClose={() => setIsReprintOpen(false)}>
             <Box sx={{
               position: 'absolute',
@@ -988,11 +1077,11 @@ const Booking = () => {
               width: 400
             }}>
               <h2>รีปริ๊นใบเสร็จ</h2>
-              <p>กรุณากรอกรหัสยืนยัน:</p>
+              <p>กรุณากรอกรหัสผ่านของคุณเพื่อยืนยัน:</p>
               <input
                 type="password"
-                value={reprintCode}
-                onChange={(e) => setReprintCode(e.target.value)}
+                value={reprintPassword}
+                onChange={e => setReprintPassword(e.target.value)}
                 style={{ width: '100%', padding: '10px', fontSize: '16px' }}
               />
               <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
@@ -1036,13 +1125,19 @@ const Booking = () => {
                         startTime: moment(newStart).format('HH:mm'),
                         endTime: moment(newEnd).format('HH:mm'),
                         reservDate: moment(newStart).format('DD/MM/YYYY'),
+                        changer: user?.name || user?.username,
+                        oldStart: moment(draggedEvent.start).format('DD/MM/YYYY HH:mm'),
+                        oldEnd: moment(draggedEvent.end).format('DD/MM/YYYY HH:mm'),
+                        newStart: moment(newStart).format('DD/MM/YYYY HH:mm'),
+                        newEnd: moment(newEnd).format('DD/MM/YYYY HH:mm'),
+                        changeTime: moment().format('DD/MM/YYYY HH:mm:ss'), // ⭐️ เพิ่มเวลาที่เปลี่ยน
                       };
                       await updateReservations(draggedEvent.id, updatedData);
                       const res = await getReservations();
                       const mappedEvents = mapReservationsToEvents(res.data);
                       setEvents(mappedEvents);
                       setIsModalOpen(false);
-                      window.location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลล่าสุด
+                      window.location.reload();
                     } catch (error) {
                       console.error("อัปเดตล้มเหลว", error);
                     }
@@ -1076,14 +1171,14 @@ const Booking = () => {
                   color="error"
                   onClick={() => {
                     if (selectedEvent?.reservID) {
-                      handleDeleteReservation(selectedEvent.reservID);
+                      handleDeleteReservation(selectedEvent.reservID , user.name);
                       setIsCancelOpen(false);
                     } else {
                       console.error("ไม่พบ reservID ใน selectedEvent");
                     }
                   }}
                 >
-                  ยืนยันลบ
+                  ยืนยันยกเลิก
                 </Button>
               </Box>
             </Box>

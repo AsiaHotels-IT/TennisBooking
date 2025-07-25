@@ -7,6 +7,11 @@ const userSchema = mongoose.Schema({
         maxlength: 20,
         required: true,
     },
+    name:{
+        type: String,
+        maxlength: 100,
+        required: true,
+    },
     password:{
         type: String,
         maxlength: 20,
@@ -16,7 +21,12 @@ const userSchema = mongoose.Schema({
         type: String,
         enum: ['auditor', 'cashier'],
         required: true,
-    }
+    },
+    adder:{
+        type: String,
+        maxlength: 100,
+        required: true,
+    },
 },{timestamps: true})
 
 userSchema.plugin(AutoIncrement, {inc_field: "userID"});

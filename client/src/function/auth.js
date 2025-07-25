@@ -17,9 +17,17 @@ export const listreprintReceipt = async () => {
 };
 
 export const register = async (data) => {
-  await axios.post(process.env.REACT_APP_API + '/register', data); // ไม่ต้องส่ง cookie ก็ได้
-};
+  return await axios.post(process.env.REACT_APP_API + '/register', data, { withCredentials: true });
+}
 
 export const login = async (data) => {
   return await axios.post(process.env.REACT_APP_API + '/login', data, { withCredentials: true });
 };
+
+export const checkPassword = async (data) => {
+  return await axios.post(process.env.REACT_APP_API + '/check-password', data, { withCredentials: true });
+}
+
+export const logout = async () => {
+  return await axios.post(process.env.REACT_APP_API + '/logout', {}, { withCredentials: true });
+}

@@ -29,7 +29,7 @@ const AuditDisplay = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const promptpayID = '0946278508';
+  const promptpayID = process.env.REACT_APP_PROMYPAY_API;
   const payload = generatePayload(promptpayID, { amount: paymentAmount });
 
   return (

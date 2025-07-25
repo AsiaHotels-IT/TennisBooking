@@ -6,6 +6,11 @@ const reprintReceipt = mongoose.Schema({
     receiptNumber: {
         type: String,
     },
+    username:{
+        type: String,
+        maxlength: 100,
+        required: true,
+    },
     reprintAt: {
         type: Date,
         default: Date.now

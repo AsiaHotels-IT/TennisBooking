@@ -59,6 +59,11 @@ const ReservationStadiumSchema = mongoose.Schema({
         type: Date,
         default: null,
     },
+    username:{
+        type: String,
+        maxlength: 100,
+        required: true,
+    },
     createAt: {
         type: Date,
         default: Date.now
@@ -68,7 +73,13 @@ const ReservationStadiumSchema = mongoose.Schema({
     },
     changeVal: {
         type: Number
-    }
+    },
+    changer: { type: String, maxlength: 100 },
+    oldStart: String,
+    oldEnd: String,
+    newStart: String,
+    newEnd: String,
+    changeTime: String,
 })
 
 ReservationStadiumSchema.plugin(AutoIncrement, {inc_field: "reservID"});
