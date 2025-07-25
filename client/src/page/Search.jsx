@@ -81,7 +81,6 @@ const Search = () => {
                     <button
                       onClick={() => {
                         setSelectedReservation(member.reservationBefore);
-                        setReservPage(1);  // reset หน้าของการจอง
                       }}
                       style={{
                         padding: '6px 18px',
