@@ -5,20 +5,20 @@
   },
   "connections": [
     {
-      "id": "4a355f72-d184-4969-985d-26f8197d8f70",
+      "id": "5f5e4ee4-db35-48ac-a370-89d668f9b489",
       "lastUsed": {
         "$date": {
-          "$numberLong": "1750670000062"
+          "$numberLong": "1753430601795"
         }
       },
       "favorite": {
-        "name": "TennisBooking"
+        "name": "192.168.2.39:27017"
       },
       "savedConnectionType": "recent",
       "connectionOptions": {
         "connectionString": "mongodb://localhost:27017/",
         "oidc": {
-          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjowLCJzdGF0ZSI6W119"
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjoxLCJzdGF0ZSI6W119"
         }
       }
     }
